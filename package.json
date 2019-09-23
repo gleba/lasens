@@ -1,0 +1,25 @@
+{
+  "name": "lasens",
+  "version": "0.0.2",
+  "description": "La Sens Store",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "typescript": {
+    "definition": "dist/index.d.ts"
+  },
+  "keywords": [],
+  "author": "Gleb Panteleev <dev@gleb.pw> (http://gleb.pw/)",
+  "license": "MIT",
+  "repository": "https://github.com/gleba/lasens",
+  "devDependencies": {
+    "@types/core-js": "^2.5.0",
+    "@types/node": "^12.6.8",
+    "tape": "^4.8.0",
+    "ts-node": "^8.0.2",
+    "typescript": "^3.4.4"
+  },
+  "dependencies": {
+    "alak": "^1.0.4",
+    "uglifyjs": "^2.4.11"
+  }
+}

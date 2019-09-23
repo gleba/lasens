@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "lib": ["ES2017", "DOM"],
+    "module": "commonjs",
+    "target": "es6",
+    "declaration": false,
+    "experimentalDecorators": true,
+    "outDir": "dist",
+    "noImplicitAny": false
+  },
+  "exclude": [
+    "node_modules",
+    "tests"
+  ]
+}
