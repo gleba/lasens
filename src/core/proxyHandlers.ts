@@ -22,6 +22,9 @@ export const safeModulePathHandler = <ProxyHandler<any>>{
 }
 
 const ActionType = 'action'
+const CreateType = 'create'
+const RemoveType = 'remove'
+
 export function proxyLoggerAction(context) {
   const wrappedMap = {}
   const wrapper = modulePath => ({
@@ -53,8 +56,9 @@ export function proxyLoggerFlow(context) {
   const wrappedMap = {}
   const flowWrapper = {
     apply(o, thisArg, argumentsList) {
-      let [value, label] = argumentsList
-      o(value, {label, ...context})
+      argumentsList.push(...context)
+      let v = argumentsList.shift()
+      o(v, argumentsList)
     },
     get(o, key) {
       return o[key]
@@ -80,9 +84,58 @@ export function proxyLoggerFlow(context) {
 }
 
 export function proxyLoggerDynamique(context) {
+
+  const logCreateModule = (o, a) => {
+    let m = o(...a)
+    A.log({
+      type: CreateType,
+      context,
+      uid: m.id,
+      value: a,
+    })
+    return m
+  }
+  const ways = {}
+  const moduleHandler = {
+    apply(o, _, a) {
+      return logCreateModule(o, a)
+    },
+    get(o, key) {
+      switch (key) {
+        case "create":
+          return (...a) => logCreateModule(o, a)
+        case "broadcast":
+          let m = ways[key]
+          if (!m) {
+            let x = o[key]
+            const {flows} = new Proxy({flows:x.flows}, proxyLoggerFlow(["broadcast", ...context]))
+            const {actions} = new Proxy({actions:x.actions}, proxyLoggerAction(["broadcast", ...context]))
+            m = ways[key] = {
+              flows,
+              actions
+            }
+          }
+          return m
+        case "removeById":
+          return (uid) => {
+            A.log({
+              type: RemoveType,
+              context,
+              uid,
+            })
+            o[key](uid)
+          }
+      }
+      return o[key]
+    }
+  }
+  const cachedModules = {}
   return {
     get(o, key) {
-      return o[key]
+      let m = cachedModules[key]
+      if (!m)
+        m = cachedModules[key] = new Proxy(o[key], moduleHandler)
+      return m
     }
   }
 }

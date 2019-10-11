@@ -1,8 +1,12 @@
-import {A} from "alak";
+import A from "alak";
 A.enableLogging()
+// // console.log(A)
+// console.log(Object.keys(A))
+
+require('./0_debug')
 require('./1_base')
-// require('./2_dynamic')
-// require('./3_pattern_maching')
+require('./2_dynamic')
+// require('./3_vue')
 // require('./4_sugar')
 // require('./5_meta')
 // require('./6_warp_events')

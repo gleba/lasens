@@ -1,8 +1,8 @@
 import {FromClass, ISens, LaAction, META_CLASSNAME, META_HOLISTIC} from './core'
 import {A, AFlow} from "alak";
 import {applyDecors, holisticLive, wakeUp} from "./decor";
-import {alive} from "./utils";
-import {proxyLoggerDynamique, safeModulePathHandler} from "./proxyHandlers";
+import {alive, DEBUG_DYN_MODULE, DEBUG_FACADE, DEBUG_INIT_FLOW} from "./utils";
+import {proxyLoggerDynamique, proxyLoggerFlow, safeModulePathHandler} from "./proxyHandlers";
 
 type StateModule<T> = Omit<T, 'actions'>
 type FlowModule<T> = { readonly [K in keyof T]: AFlow<T[K]> }
@@ -12,7 +12,7 @@ type DynamiqueModule<T> = {
   flow: FlowModule<StateModule<T>>
 }
 
-export type La<T> = {
+export interface La<T> {
   f: FlowModule<StateModule<T>>
   state: FlowModule<StateModule<T>>
 }
@@ -50,22 +50,31 @@ export function Dynamique<U, T>(store: ISens<U>, modules: T): IDynamique<U, T> {
       flow.setId(className + '.' + id + '.' + flowName)
       flow.addMeta(META_CLASSNAME, className)
       if (isAliveValue && !isHolistic) {
-        flow(initialFlowStateValue)
+        flow(initialFlowStateValue, DEBUG_INIT_FLOW)
       }
       applyDecors(flow, className, flowName)
       module[flowName] = flow
     })
+    wakeUp()
     let actions
     if (instance.actions) {
-      let context = Object.assign({id}, store.newContext({id}))
+      let ctxPath = [id, className, ...DEBUG_DYN_MODULE]
+      let ctxedThinx = store.newContext(ctxPath)
+      let f
+      if (A.canLog) {
+        let p = new Proxy({x: module}, proxyLoggerFlow(ctxPath))
+        f = p.x
+      } else {
+        f = module
+      }
+      let context = Object.assign({id}, ctxedThinx)
       instance.actions.bind(context)
-      actions = instance.actions.apply(context, [Object.assign({f: module}, context), context])
+      actions = instance.actions(Object.assign({f}, context))
       actions.id = id
       if (actions.new) {
         actions.new(argument)
       }
     }
-    wakeUp()
     return {
       flows: module,
       actions
@@ -99,6 +108,7 @@ export function Dynamique<U, T>(store: ISens<U>, modules: T): IDynamique<U, T> {
       const module = create(moduleClass, id, argument)
       instancesMap.set(id, module)
       satMap.set(moduleClass, instancesMap)
+      module['id'] = id
       return module
     }
 
@@ -135,6 +145,6 @@ export function Dynamique<U, T>(store: ISens<U>, modules: T): IDynamique<U, T> {
   })
 
   store['things'].dynamique = [dynamique, proxyLoggerDynamique]
-  store['dynamique'] = dynamique
+  store['dynamique'] = A.canLog ? new Proxy(dynamique, proxyLoggerDynamique(DEBUG_FACADE)) : dynamique
   return store as any
 }

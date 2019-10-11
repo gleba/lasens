@@ -1,6 +1,8 @@
-import {A, AFlow} from 'alak'
+import { AFlow} from 'alak'
+import A from 'alak'
+
 import {applyDecors, holisticLive, wakeUp} from './decor'
-import {alive, clearObject} from './utils'
+import {alive, clearObject, DEBUG_FACADE, DEBUG_MODULE, DEBUG_INIT_FLOW} from './utils'
 import {proxyLoggerAction, proxyLoggerFlow, safeModulePathHandler} from "./proxyHandlers";
 
 // type PropType<TObj, TProp extends keyof TObj> = TObj[TProp];
@@ -71,7 +73,7 @@ export function LaSens<T>(
     actions: [actions, proxyLoggerAction]
   } as any
 
-  function useContextFor(context) {
+  function useThingsFor(context) {
     let result = {}
     Object.keys(things).forEach(k => {
       let [thing, proxyH] = things[k]
@@ -92,7 +94,7 @@ export function LaSens<T>(
     let holistic = holisticLive(awakened, className)
     let module = new Proxy({_: {moduleName: modulePath, className}}, safeModulePathHandler)
     Object.keys(awakened).forEach(flowName => {
-      let flow = A.flow()
+      let flow = A()
       let initialFlowStateValue = awakened[flowName]
       let isHolistic = holistic[flowName]
       let isAliveValue = alive(initialFlowStateValue)
@@ -102,7 +104,7 @@ export function LaSens<T>(
       flow.setId(modulePath + '.' + flowName)
       flow.addMeta(META_CLASSNAME, className)
       if (isAliveValue && !isHolistic) {
-        flow(initialFlowStateValue)
+        flow(initialFlowStateValue, DEBUG_INIT_FLOW)
       }
       applyDecors(flow, className, flowName)
       module[flowName] = flow
@@ -111,12 +113,13 @@ export function LaSens<T>(
     awakedFlow[modulePath] = module
 
 
-    if (awakened.actions) {
-      let context = useContextFor({modulePath, className})
-      awakened.actions.bind(context)
-      awakedActions[modulePath] = awakened.actions.apply(context, [Object.assign({f: module}, context), context])
-    }
     wakeUp()
+    if (awakened.actions) {
+      let ctxedThinx = useThingsFor([className, modulePath, ...DEBUG_MODULE])
+      let f = ctxedThinx.flows[modulePath]
+      awakened.actions.bind(ctxedThinx)
+      awakedActions[modulePath] = awakened.actions.apply(ctxedThinx, [Object.assign({f}, ctxedThinx), ctxedThinx])
+    }
     return module
   }
 
@@ -135,8 +138,8 @@ export function LaSens<T>(
   return {
     renew,
     things,
-    newContext: useContextFor,
-    ...useContextFor({facade: true})
+    newContext: useThingsFor,
+    ...useThingsFor(DEBUG_FACADE)
   } as any
 
 }

@@ -5,7 +5,7 @@
     "target": "es6",
     "declaration": false,
     "experimentalDecorators": true,
-    "outDir": "dist",
+    "outDir": ".",
     "noImplicitAny": false
   },
   "exclude": [

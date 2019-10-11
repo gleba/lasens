@@ -1,14 +1,11 @@
-import { AFlow } from 'alak'
+import {AFlow} from 'alak'
 
-// type ReactInputEvent = {
-//   (event: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>):void
-// }
+
 export interface Obj<V> {
-  [s: string ]: V
+  [s: string]: V
 }
-export const extractEventTarget = <T>(f: AFlow<T>) => (e: any) => f(e.target.value)
 
-// export const notNull = (v) => (v !== undefined && v !== null) as boolean
+export const extractEventTarget = <T>(f: AFlow<T>) => (e: any) => f(e.target.value)
 export const alive = v => (v !== undefined && v !== null) as boolean
 export const isTruth = v => !!v
 export const nullFilter = f => v => (alive(v) ? f(v) : null)
@@ -34,6 +31,7 @@ export const toDicById = list => {
     })
   return o
 }
+
 export function flatFlowObject(o: Obj<AFlow<any>>): Obj<any> {
   let n = {}
   Object.keys(o).forEach(k => {
@@ -41,4 +39,14 @@ export function flatFlowObject(o: Obj<AFlow<any>>): Obj<any> {
   })
   return n
 }
+
 export const clearObject = o => Object.keys(o).forEach(n => delete o[n])
+
+
+export const DEBUG_LA_SENS = "lasens"
+
+export const DEBUG_INIT_FLOW = ["init", DEBUG_LA_SENS]
+export const DEBUG_FACADE = ["facade", DEBUG_LA_SENS]
+export const DEBUG_MODULE = ["module", DEBUG_LA_SENS]
+export const DEBUG_VIEW = ["view", DEBUG_LA_SENS]
+export const DEBUG_DYN_MODULE = ["dyn_module", DEBUG_LA_SENS]

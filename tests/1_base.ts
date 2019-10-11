@@ -2,11 +2,10 @@ import { test } from './ouput.shema'
 
 // import { holistic, qubit } from '../src/decor'
 import set = Reflect.set
-import {holistic, LaSens, qubit} from "../src";
-import {ISens} from "../src/core";
-import {La} from "../src/dynamique";
+import {holistic, LaSens, qubit} from "../src/core";
+import {ISens, La} from "../src/core";
 
-
+//
 const apiMockGetTo = (path, id) =>
   new Promise(done => {
     const name = path.slice(1)
@@ -27,7 +26,7 @@ const apiMockGetTo = (path, id) =>
       }, 64)
     }
   })
-
+//
 export class BaseModule {
   @qubit userId: number
   @holistic profile
@@ -58,7 +57,7 @@ export class BaseModule {
     }
   }
 }
-
+//
 const modules = {
   base: BaseModule,
 }
