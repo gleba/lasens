@@ -1,0 +1,10 @@
+export declare function clearDecorators(): void;
+export declare function getFx(f: Function): PropertyDecorator;
+export declare function changeFx(f: Function): PropertyDecorator;
+export declare function stored(target: Object, propertyKey: string | symbol): void;
+export declare function qubit(target: Object, propertyKey: string | symbol): void;
+export declare function holistic(target: Object, propertyKey: string | symbol): void;
+export declare function extra(target: Object, propertyKey: string | symbol): void;
+export declare function holisticLive(module: any, className: any): {};
+export declare function applyDecors(flow: any, moduleName: any, flowName: any): void;
+export declare function wakeUp(): void;

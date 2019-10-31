@@ -87,7 +87,7 @@ function warmUp(flow, decors) {
     let decor = decors[v]
     switch (v) {
       case Decor.Stored:
-        XStorage.save(flow)
+        XStorage.bindFlow(flow)
         break
       default:
         delayed[v] = decor

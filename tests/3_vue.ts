@@ -1,13 +1,7 @@
-import { test } from './ouput.shema'
-
-// import { holistic, qubit } from '../src/decor'
-import set = Reflect.set
-import {holistic, LaSens, qubit} from "../src";
+import {holistic, LaSens, qubit} from "../src/core";
 import {ISens} from "../src/core";
-
+import {La} from "../src/core";
 import {LaVue} from "../src/vue";
-import {La} from "../src/core/dynamique";
-La
 
 
 const apiMockGetTo = (path, id) =>
@@ -24,7 +18,7 @@ const apiMockGetTo = (path, id) =>
       )
     else {
       setTimeout(() => {
-        let ar = Array(Math.round(1+Math.random() * 7)).fill(0)
+        let ar = Array(Math.round(1 + Math.random() * 7)).fill(0)
         ar = ar.map((z, i) => i + ':' + id + '-' + name)
         done(ar)
       }, 64)
@@ -41,7 +35,7 @@ export class BaseModule {
   a2 = "wait2"
   a3 = "wait3"
 
-  actions({f}:La<BaseModule>) {
+  actions({f}: La<BaseModule>) {
 
     f.userId.up(id => {
       f.profile(apiMockGetTo('/profile', id))
@@ -51,14 +45,14 @@ export class BaseModule {
 
     return {
       generateUserId() {
-        f.userId(Math.floor(Math.random()*999999+100))
+        f.userId(Math.floor(Math.random() * 999999 + 100))
         this.a1("done")
       },
-      a1(v){
+      a1(v) {
         f.a1(v)
       },
-      async action2(){
-        return new Promise(done=>setTimeout(v=>done(true),200))
+      async action2() {
+        return new Promise(done => setTimeout(v => done(true), 200))
       }
     }
   }
@@ -71,116 +65,47 @@ const modules = {
 type XStore = ISens<typeof modules>
 
 
-// const Vue = require("vue")
-
-// const Vue = _Vue
-// console.log(_Vue.use)
-
-
 require('jsdom-global')()
-var testUtils=require('@vue/test-utils'), Vue=require('vue');
+var testUtils = require('@vue/test-utils'), Vue = require('vue');
 const MyComponent = {
   template: `
     <div>
-      <span class="count">{{ count }}</span>
-      <span class="xxx">{{ xxx }}</span>
-      <button @click="increment">Increment</button>
+      {{ a2 ? a2 :" fall " }}
+<!--      {{ xxx }}-->
+<!--      <button @click="increment">Increment</button>-->
     </div>
   `,
 
-  data () {
-    console.log("≃")
-
+  data() {
+    console.log("data ✓!")
     return {
       count: 0
     }
   },
 
-  use({base}){
-    // console.log("i can use")
+  from({base}) {
+    // base.a2.as("xxx")
+    base.a2.asIs(x=>x+"00")
 
-    base.a2.as("xxx")
-    // base.a2.as("count")
-    base.a3.up(x=>{
-      console.log("up!", this.count)
-      this.count = 3
-      this.xxx = x+"xxx!"
-    })
-    // this.count = 2
-    console.log("→", this.count)
+    // base.a3.up(x=>{
+    //   this.count = 3
+    //   this.xxx = x+"xxx!"
+    // })
 
   },
   methods: {
-    increment () {
+    increment() {
       this.count++
     }
   }
 }
 
-// console.log(typeof MyComponent)
 let store = LaSens(modules)
 store.renew()
-
-// console.log(store.flows.base.a1.v)
-
 const laVue = LaVue(store)
 const localVue = testUtils.createLocalVue()
 localVue.use(laVue)
-//
 const wrapper = testUtils.mount(MyComponent, {localVue})
-console.log(wrapper.html())
-// store.flows.base.a2("new")
 store.flows.base.a3("new")
 console.log(wrapper.html())
 wrapper.destroy()
-// wrapper.$mou
-// alak()
-// test('vue', async ({ ok, end, fall, plan }) => {
-//   let store = LaSens(modules)
-//   const laVue = LaVue(store)
-//   store.renew()
-//
-//   // console.log(Vue)
-//
-//   Vue.use(laVue)
-//
-//   let wm = new Vue({
-//
-//     data: function () {
-//       return {
-//         templateText: "xx",
-//       }
-//     },
-//
-//     computed: {
-//       result: function () {
-//         if (!this.templateText) {
-//           return 'Enter a valid template above'
-//         }
-//
-//         try {
-//           var result = Vue.compile(this.templateText.replace(/\s{2,}/g, ''))
-//
-//           return {
-//             render: this.formatFunction(result.render),
-//             staticRenderFns: result.staticRenderFns.map(this.formatFunction)
-//           }
-//         } catch (error) {
-//           return error.message
-//         }
-//       }
-//     },
-//
-//     methods: {
-//       formatFunction: function (fn) {
-//         return fn.toString().replace(/(\{\n)(\S)/, '$1  $2')
-//       }
-//     }
-//   }).$mount()
-//
-//   console.error = function (error) {
-//     throw new Error(error)
-//   }
-//   // wm.$mount()
-//   setTimeout(end, 250)
-// })

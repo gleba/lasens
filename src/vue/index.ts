@@ -1,13 +1,13 @@
 import {ISens} from "../core";
 import {installMixin} from "./install-mixin";
+import {AFlow} from "alak";
 
-interface LaVueAFlow<T> {
-  as: (nameInTemplate: string) => void
-  on: (event: string, listiner: Function) => void
-
-  up(fn: (value: T) => void): void
-
-  match(...pattern: any[]): any
+type LaVueAFlow<T> = AFlow<T> & {
+  as: (nameInTemplate: string, wrapper?: (v: T) => any) => LaVueAFlow<T>
+  asIs: (wrapper?: (v: T) => any) => LaVueAFlow<T>
+  // on: (event: string, listiner: Function) => void
+  // up(fn: (value: T) => void): void
+  // match(...pattern: any[]): any
 }
 
 type FlowModule<T> = { readonly [K in keyof T]: LaVueAFlow<T[K]> }
@@ -20,24 +20,10 @@ export interface LaVueCO<T extends ISens<any>> {
 
 
 export function LaVue<T>(sens: ISens<T>) {
-
-
+  sens.renew()
   return {
     install(_Vue: any, options: any, ...a) {
-      // GlobalState.init(_Vue)
-      // plugins.forEach(p=>p.patchModules(this.storeModules))
-      // actions.set(this.storeModules)
-      // createNodes(this.storeModules)
-      // createEdges(this.storeModules)
-      // graphEdges()
-      //
-      // let gate = newGate('Ω')
-      //
-      // _Vue.prototype.$a = sens.actions
-      // _Vue.prototype.$f = sens.flows
-
       _Vue.mixin(installMixin(sens))
-
     }
   }
 }
