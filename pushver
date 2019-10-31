@@ -2,6 +2,6 @@
 
 push vv
 rm -rf ./core
-rm -rf ./dist
+rm -rf ./vue
 tsc -d
 npm publish
