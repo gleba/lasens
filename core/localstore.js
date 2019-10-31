@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const alak_1 = require("alak");
 let isBrowser = new Function("try {return this===window;}catch(e){ return false;}");
 let isServer = !isBrowser();
 exports.XStorage = {
@@ -12,9 +13,10 @@ exports.XStorage = {
             flow(vv);
             flow.next(v => localStorage.setItem(flow.id, JSON.stringify(v)));
         }
-        else {
-            flow.up(v => localStorage.setItem(flow.id, JSON.stringify(v)));
-        }
+        flow.on(alak_1.default.STATE_CLEAR_VALUE, () => {
+            localStorage.removeItem((flow.id));
+        });
+        flow.up(v => localStorage.setItem(flow.id, JSON.stringify(v)));
     },
     // save(flow) {
     //   if (isServer) return false

@@ -1,3 +1,7 @@
 #!/usr/bin/env bash
 
-push v
+push vv
+rm -rf ./core
+rm -rf ./dist
+tsc -d
+npm publish
