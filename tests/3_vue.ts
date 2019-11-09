@@ -70,9 +70,8 @@ var testUtils = require('@vue/test-utils'), Vue = require('vue');
 const MyComponent = {
   template: `
     <div>
+      {{ $flow }}
       {{ a2 ? a2 :" fall " }}
-<!--      {{ xxx }}-->
-<!--      <button @click="increment">Increment</button>-->
     </div>
   `,
 

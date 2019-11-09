@@ -2,7 +2,7 @@ import {FromClass, ISens, LaAction, META_CLASSNAME, META_HOLISTIC} from './core'
 import {A, AFlow} from "alak";
 import {applyDecors, holisticLive, wakeUp} from "./decor";
 import {alive, DEBUG_DYN_MODULE, DEBUG_FACADE, DEBUG_INIT_FLOW} from "./utils";
-import {proxyLoggerDynamique, proxyLoggerFlow, safeModulePathHandler} from "./proxyHandlers";
+import {proxyLoggerDynamique, proxyLoggerFlow, safeModulePathHandler} from "./debugHandlers";
 
 type StateModule<T> = Omit<T, 'actions'>
 type FlowModule<T> = { readonly [K in keyof T]: AFlow<T[K]> }

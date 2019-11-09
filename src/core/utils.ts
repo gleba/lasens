@@ -40,7 +40,16 @@ export function flatFlowObject(o: Obj<AFlow<any>>): Obj<any> {
   return n
 }
 
-export const clearObject = o => Object.keys(o).forEach(n => delete o[n])
+export const primitiveExceptions = {
+  toString: true,
+  [Symbol.toStringTag]: true,
+  [Symbol.toPrimitive]: true
+}
+export const clearObject = o => {
+  Object.keys(o).forEach(n => {
+    if (!primitiveExceptions[n]) delete o[n]
+  })
+}
 
 
 export const DEBUG_LA_SENS = "lasens"

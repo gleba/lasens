@@ -1,9 +1,10 @@
-import { AFlow} from 'alak'
+import {AFlow} from 'alak'
 import A from 'alak'
 
 import {applyDecors, holisticLive, wakeUp} from './decor'
-import {alive, clearObject, DEBUG_FACADE, DEBUG_MODULE, DEBUG_INIT_FLOW} from './utils'
-import {proxyLoggerAction, proxyLoggerFlow, safeModulePathHandler} from "./proxyHandlers";
+import {alive, clearObject, DEBUG_FACADE, DEBUG_MODULE, DEBUG_INIT_FLOW, primitiveExceptions} from './utils'
+import {alwaysErrorProxy, proxyLoggerAction, proxyLoggerFlow, safeModulePathHandler} from "./debugHandlers";
+import {createPrivateKey} from "crypto";
 
 // type PropType<TObj, TProp extends keyof TObj> = TObj[TProp];
 
@@ -50,6 +51,8 @@ export interface ISens<T> {
 export function LaSens<T>(
   modules: T,
 ): ISens<T> {
+
+  const availableModules = () => "available modules: " + Object.keys(sleepingModules).toString()
   const sleepingModules = {} as any
   let awakedFlow = {}
   let awakedActions = {}
@@ -60,8 +63,15 @@ export function LaSens<T>(
     get(o, key) {
       let m = o[key]
       if (!m) {
-        awakeModule(key)
-        m = o[key]
+        let reasonToSleep = awakeModule(key)
+        if (!reasonToSleep) {
+          m = o[key]
+        } else if (primitiveExceptions[key]) {
+          return reasonToSleep
+        } else {
+          let reasonExplain = "[" + key + "] is unavailable module, available path: " + reasonToSleep.toString()
+          return A.canLog ? reasonExplain : alwaysErrorProxy(reasonExplain)
+        }
       }
       return m
     },
@@ -73,22 +83,33 @@ export function LaSens<T>(
     actions: [actions, proxyLoggerAction]
   } as any
 
-  function useThingsFor(context) {
+  function useSensFor(context) {
     let result = {}
     Object.keys(things).forEach(k => {
       let [thing, proxyH] = things[k]
-      result[k] = A.canLog ? new Proxy(thing, proxyH(context)) : thing
+      if (A.canLog) {
+        result[k] = new Proxy(thing, proxyH(context))
+      } else {
+        result[k] = thing
+      }
     })
     return result as LaSensType<T>
   }
 
   // const state = new Proxy(awakedActions, graphProxyHandler) as ActionModules<T>
   function awakeModule(modulePath) {
-    console.log('✓ awake module :', modulePath)
+    if (primitiveExceptions[modulePath]) {
+      return alwaysErrorProxy(availableModules())
+    }
     let sleepingModule = sleepingModules[modulePath]
     if (!sleepingModule) {
-      console.error('Module Name: ', modulePath, ' is not initialised')
+      console.error('Module by path name: [', modulePath, '] is not found')
+      let availableModulesMessage = availableModules()
+      console.warn(availableModulesMessage)
+
+      return alwaysErrorProxy(availableModulesMessage)
     }
+    console.log('✓ awake module :', modulePath)
     let awakened = new sleepingModule()
     let className = awakened.constructor.name
     let holistic = holisticLive(awakened, className)
@@ -112,15 +133,14 @@ export function LaSens<T>(
     })
     awakedFlow[modulePath] = module
 
-
     wakeUp()
     if (awakened.actions) {
-      let ctxedThinx = useThingsFor([className, modulePath, ...DEBUG_MODULE])
+      let ctxedThinx = useSensFor([className, modulePath, ...DEBUG_MODULE])
       let f = ctxedThinx.flows[modulePath]
       awakened.actions.bind(ctxedThinx)
       awakedActions[modulePath] = awakened.actions.apply(ctxedThinx, [Object.assign({f}, ctxedThinx), ctxedThinx])
     }
-    return module
+    return false
   }
 
   function renew(): void {
@@ -138,11 +158,7 @@ export function LaSens<T>(
   return {
     renew,
     things,
-    newContext: useThingsFor,
-    ...useThingsFor(DEBUG_FACADE)
+    newContext: useSensFor,
+    ...useSensFor(DEBUG_FACADE)
   } as any
-
 }
-
-
-
