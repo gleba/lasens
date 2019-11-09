@@ -48,7 +48,7 @@ var testUtils = require('@vue/test-utils'), Vue = require('vue');
 const MyComponent = {
   template: `
     <div>
-      {{ $flow.basde.a1.v }}
+      {{ $flow.base.ax }}
 <!--      {{ $flow.base.a1.v }}-->
     </div>
   `

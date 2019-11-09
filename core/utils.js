@@ -32,7 +32,17 @@ function flatFlowObject(o) {
     return n;
 }
 exports.flatFlowObject = flatFlowObject;
-exports.clearObject = o => Object.keys(o).forEach(n => delete o[n]);
+exports.primitiveExceptions = {
+    toString: true,
+    [Symbol.toStringTag]: true,
+    [Symbol.toPrimitive]: true
+};
+exports.clearObject = o => {
+    Object.keys(o).forEach(n => {
+        if (!exports.primitiveExceptions[n])
+            delete o[n];
+    });
+};
 exports.DEBUG_LA_SENS = "lasens";
 exports.DEBUG_INIT_FLOW = ["init", exports.DEBUG_LA_SENS];
 exports.DEBUG_FACADE = ["facade", exports.DEBUG_LA_SENS];

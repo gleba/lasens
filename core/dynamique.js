@@ -4,13 +4,13 @@ const core_1 = require("./core");
 const alak_1 = require("alak");
 const decor_1 = require("./decor");
 const utils_1 = require("./utils");
-const proxyHandlers_1 = require("./proxyHandlers");
+const debugHandlers_1 = require("./debugHandlers");
 function Dynamique(store, modules) {
     function create(moduleClass, id, argument) {
         let instance = new moduleClass();
         let className = instance.constructor.name;
         let holistic = decor_1.holisticLive(instance, className);
-        let module = new Proxy({ _: { moduleName: instance, className } }, proxyHandlers_1.safeModulePathHandler);
+        let module = new Proxy({ _: { moduleName: instance, className } }, debugHandlers_1.safeModulePathHandler);
         Object.keys(instance).forEach(flowName => {
             let flow = alak_1.A.flow();
             let initialFlowStateValue = instance[flowName];
@@ -34,7 +34,7 @@ function Dynamique(store, modules) {
             let ctxedThinx = store.newContext(ctxPath);
             let f;
             if (alak_1.A.canLog) {
-                let p = new Proxy({ x: module }, proxyHandlers_1.proxyLoggerFlow(ctxPath));
+                let p = new Proxy({ x: module }, debugHandlers_1.proxyLoggerFlow(ctxPath));
                 f = p.x;
             }
             else {
@@ -114,8 +114,8 @@ function Dynamique(store, modules) {
                 throw "Dynamique module " + key.toString() + " not present";
         }
     });
-    store['things'].dynamique = [dynamique, proxyHandlers_1.proxyLoggerDynamique];
-    store['dynamique'] = alak_1.A.canLog ? new Proxy(dynamique, proxyHandlers_1.proxyLoggerDynamique(utils_1.DEBUG_FACADE)) : dynamique;
+    store['things'].dynamique = [dynamique, debugHandlers_1.proxyLoggerDynamique];
+    store['dynamique'] = alak_1.A.canLog ? new Proxy(dynamique, debugHandlers_1.proxyLoggerDynamique(utils_1.DEBUG_FACADE)) : dynamique;
     return store;
 }
 exports.Dynamique = Dynamique;

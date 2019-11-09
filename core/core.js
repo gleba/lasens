@@ -3,10 +3,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const alak_1 = require("alak");
 const decor_1 = require("./decor");
 const utils_1 = require("./utils");
-const proxyHandlers_1 = require("./proxyHandlers");
+const debugHandlers_1 = require("./debugHandlers");
 exports.META_HOLISTIC = 'holistic';
 exports.META_CLASSNAME = 'classname';
 function LaSens(modules) {
+    const availableModules = () => "available modules: " + Object.keys(sleepingModules).toString();
     const sleepingModules = {};
     let awakedFlow = {};
     let awakedActions = {};
@@ -17,8 +18,17 @@ function LaSens(modules) {
         get(o, key) {
             let m = o[key];
             if (!m) {
-                awakeModule(key);
-                m = o[key];
+                let reasonToSleep = awakeModule(key);
+                if (!reasonToSleep) {
+                    m = o[key];
+                }
+                else if (utils_1.primitiveExceptions[key]) {
+                    return reasonToSleep;
+                }
+                else {
+                    let reasonExplain = "[" + key + "] is unavailable module, available path: " + reasonToSleep.toString();
+                    return alak_1.default.canLog ? reasonExplain : debugHandlers_1.alwaysErrorProxy(reasonExplain);
+                }
             }
             return m;
         },
@@ -26,28 +36,39 @@ function LaSens(modules) {
     const flows = new Proxy(awakedFlow, graphProxyHandler);
     const actions = new Proxy(awakedActions, graphProxyHandler);
     const things = {
-        flows: [flows, proxyHandlers_1.proxyLoggerFlow],
-        actions: [actions, proxyHandlers_1.proxyLoggerAction]
+        flows: [flows, debugHandlers_1.proxyLoggerFlow],
+        actions: [actions, debugHandlers_1.proxyLoggerAction]
     };
-    function useThingsFor(context) {
+    function useSensFor(context) {
         let result = {};
         Object.keys(things).forEach(k => {
             let [thing, proxyH] = things[k];
-            result[k] = alak_1.default.canLog ? new Proxy(thing, proxyH(context)) : thing;
+            if (alak_1.default.canLog) {
+                result[k] = new Proxy(thing, proxyH(context));
+            }
+            else {
+                result[k] = thing;
+            }
         });
         return result;
     }
     // const state = new Proxy(awakedActions, graphProxyHandler) as ActionModules<T>
     function awakeModule(modulePath) {
-        console.log('✓ awake module :', modulePath);
+        if (utils_1.primitiveExceptions[modulePath]) {
+            return debugHandlers_1.alwaysErrorProxy(availableModules());
+        }
         let sleepingModule = sleepingModules[modulePath];
         if (!sleepingModule) {
-            console.error('Module Name: ', modulePath, ' is not initialised');
+            console.error('Module by path name: [', modulePath, '] is not found');
+            let availableModulesMessage = availableModules();
+            console.warn(availableModulesMessage);
+            return debugHandlers_1.alwaysErrorProxy(availableModulesMessage);
         }
+        console.log('✓ awake module :', modulePath);
         let awakened = new sleepingModule();
         let className = awakened.constructor.name;
         let holistic = decor_1.holisticLive(awakened, className);
-        let module = new Proxy({ _: { moduleName: modulePath, className } }, proxyHandlers_1.safeModulePathHandler);
+        let module = new Proxy({ _: { moduleName: modulePath, className } }, debugHandlers_1.safeModulePathHandler);
         Object.keys(awakened).forEach(flowName => {
             let flow = alak_1.default();
             let initialFlowStateValue = awakened[flowName];
@@ -68,12 +89,12 @@ function LaSens(modules) {
         awakedFlow[modulePath] = module;
         decor_1.wakeUp();
         if (awakened.actions) {
-            let ctxedThinx = useThingsFor([className, modulePath, ...utils_1.DEBUG_MODULE]);
+            let ctxedThinx = useSensFor([className, modulePath, ...utils_1.DEBUG_MODULE]);
             let f = ctxedThinx.flows[modulePath];
             awakened.actions.bind(ctxedThinx);
             awakedActions[modulePath] = awakened.actions.apply(ctxedThinx, [Object.assign({ f }, ctxedThinx), ctxedThinx]);
         }
-        return module;
+        return false;
     }
     function renew() {
         utils_1.clearObject(awakedActions);
@@ -86,6 +107,6 @@ function LaSens(modules) {
         }
     }
     return Object.assign({ renew,
-        things, newContext: useThingsFor }, useThingsFor(utils_1.DEBUG_FACADE));
+        things, newContext: useSensFor }, useSensFor(utils_1.DEBUG_FACADE));
 }
 exports.LaSens = LaSens;

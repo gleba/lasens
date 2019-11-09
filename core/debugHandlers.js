@@ -9,10 +9,18 @@ exports.safeModulePathHandler = {
     get(o, key) {
         let v = o[key];
         if (!v) {
-            console.log(key);
-            console.log(`× Not initialised flow: ${o._.name}.${key}`);
-            console.warn(`Use @qubit directive and processing null exception, or define value '${key}' in '${o._.className}'`);
-            throw `GRAPH_SCHEMA_ERROR • ${o._.name}.${key}`;
+            if (key == "toJSON") {
+                return {
+                    path: o._.moduleName,
+                    class: o._.className,
+                    flows: Object.keys(o)
+                };
+            }
+            else {
+                console.log(`× Not initialised flow: ${o._.moduleName}.${key}`);
+                console.warn(`Use @qubit directive and processing null exception, or define value '${key}' in '${o._.className}'`);
+                throw `GRAPH_SCHEMA_ERROR • ${o._.moduleName}.${key}`;
+            }
         }
         return v;
     },
@@ -47,8 +55,27 @@ function proxyLoggerAction(context) {
     };
 }
 exports.proxyLoggerAction = proxyLoggerAction;
+const labelString = "∴ is lasens flow proxy ✓ in debug mode";
+exports.makeMessageObj = message => ({
+    toString: () => message,
+    [Symbol.toStringTag]: () => message,
+    [Symbol.toPrimitive]: () => message
+});
+exports.alwaysErrorProxy = message => {
+    return new Proxy(exports.makeMessageObj(message), {
+        get(o, key) {
+            let m = o[key];
+            if (m) {
+                return m;
+            }
+            else {
+                return exports.alwaysErrorProxy(message);
+            }
+        }
+    });
+};
 function proxyLoggerFlow(context) {
-    const wrappedMap = {};
+    const wrappedMap = Object.assign({}, exports.makeMessageObj(labelString));
     const flowWrapper = {
         apply(o, thisArg, argumentsList) {
             argumentsList.push(...context);
@@ -70,12 +97,18 @@ function proxyLoggerFlow(context) {
     });
     return {
         get(o, key) {
-            let element = wrappedMap[key];
-            if (!element) {
-                element = wrappedMap[key] = new Proxy(o[key], wrapper(key));
+            let wrappedModule = wrappedMap[key];
+            let originalModule = o[key];
+            if (typeof originalModule != 'string') {
+                if (!wrappedModule) {
+                    wrappedModule = wrappedMap[key] = new Proxy(originalModule, wrapper(key));
+                }
             }
-            return element;
-        },
+            else {
+                return exports.alwaysErrorProxy(originalModule);
+            }
+            return wrappedModule;
+        }
     };
 }
 exports.proxyLoggerFlow = proxyLoggerFlow;

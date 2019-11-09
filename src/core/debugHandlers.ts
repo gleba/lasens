@@ -21,7 +21,13 @@ export const safeModulePathHandler = <ProxyHandler<any>>{
             o._.className
           }'`,
         )
-        throw `GRAPH_SCHEMA_ERROR • ${o._.moduleName}.${key}`
+        console.log(`GRAPH_SCHEMA_ERROR • ${o._.moduleName}.${key}`)
+        return alwaysErrorProxy(JSON.stringify({
+          error:`× Not initialised flow: ${o._.moduleName}.${key}`,
+          path:o._.moduleName,
+          class:o._.className,
+          flows:Object.keys(o)
+        }))
       }
     }
     return v

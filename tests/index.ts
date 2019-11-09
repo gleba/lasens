@@ -1,12 +1,12 @@
 import A from "alak";
-// A.enableLogging()
+ A.enableLogging()
 // // console.log(A)
 // console.log(Object.keys(A))
 
-require('./0_debug')
-require('./1_base')
-require('./2_dynamic')
-require('./3_vue')
+// require('./0_debug')
+// require('./1_base')
+// require('./2_dynamic')
+// require('./3_vue')
 require('./4_trace')
 // require('./5_meta')
 // require('./6_warp_events')
