@@ -3,7 +3,7 @@ import {XStorage} from "./localstore";
 
 
 enum Decor {
-  Warp = 'warp',
+  Getter = 'getter',
   Change = 'change',
   Stored = 'stored',
 }
@@ -24,9 +24,9 @@ const upGet = <T>(o, key) => {
 const addMetaMap = (mutator, module, key, fx) => {
   upGet(upGet(decorModuleMap, module), key)[mutator] = fx
 }
-export function getFx(f: Function): PropertyDecorator {
+export function getter(f: Function): PropertyDecorator {
   return (target: Object, propertyKey: string | symbol) => {
-    addMetaMap(Decor.Warp, target.constructor.name, propertyKey, f)
+    addMetaMap(Decor.Getter, target.constructor.name, propertyKey, f)
   }
 }
 export function changeFx(f: Function): PropertyDecorator {
@@ -102,7 +102,7 @@ export function wakeUp() {
     Object.keys(decors).forEach(v => {
       let decor = decors[v]
       switch (v) {
-        case Decor.Warp:
+        case Decor.Getter:
           flow.useWarp(decor)
           flow()
           break

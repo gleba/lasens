@@ -2,6 +2,10 @@ import { A, AFlow } from 'alak'
 import { useCallback, useEffect, useState } from 'react'
 
 
+function checkMeta(flow) {
+
+}
+
 export function useFlow<T>(flow: AFlow<T>):[T, AFlow<T>] {
   const [state, mutate] = useState(flow.value)
   useEffect(() => {
