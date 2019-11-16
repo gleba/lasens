@@ -1,6 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const react_1 = require("react");
+function checkMeta(flow) {
+}
 function useFlow(flow) {
     const [state, mutate] = react_1.useState(flow.value);
     react_1.useEffect(() => {

@@ -4,7 +4,7 @@ const utils_1 = require("./utils");
 const localstore_1 = require("./localstore");
 var Decor;
 (function (Decor) {
-    Decor["Warp"] = "warp";
+    Decor["Getter"] = "getter";
     Decor["Change"] = "change";
     Decor["Stored"] = "stored";
 })(Decor || (Decor = {}));
@@ -24,12 +24,12 @@ const upGet = (o, key) => {
 const addMetaMap = (mutator, module, key, fx) => {
     upGet(upGet(decorModuleMap, module), key)[mutator] = fx;
 };
-function getFx(f) {
+function getter(f) {
     return (target, propertyKey) => {
-        addMetaMap(Decor.Warp, target.constructor.name, propertyKey, f);
+        addMetaMap(Decor.Getter, target.constructor.name, propertyKey, f);
     };
 }
-exports.getFx = getFx;
+exports.getter = getter;
 function changeFx(f) {
     return (target, propertyKey) => {
         addMetaMap(Decor.Change, target.constructor.name, propertyKey, f);
@@ -106,7 +106,7 @@ function wakeUp() {
         Object.keys(decors).forEach(v => {
             let decor = decors[v];
             switch (v) {
-                case Decor.Warp:
+                case Decor.Getter:
                     flow.useWarp(decor);
                     flow();
                     break;

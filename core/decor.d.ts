@@ -1,5 +1,5 @@
 export declare function clearDecorators(): void;
-export declare function getFx(f: Function): PropertyDecorator;
+export declare function getter(f: Function): PropertyDecorator;
 export declare function changeFx(f: Function): PropertyDecorator;
 export declare function stored(target: Object, propertyKey: string | symbol): void;
 export declare function qubit(target: Object, propertyKey: string | symbol): void;
