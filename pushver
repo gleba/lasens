@@ -3,5 +3,6 @@
 push vv
 rm -rf ./core
 rm -rf ./vue
+rm -rf ./react
 tsc -d
-npm publish
+#npm publish

@@ -83,7 +83,7 @@ export function LaSens<T>(
     actions: [actions, proxyLoggerAction]
   } as any
 
-  function useSensFor(context) {
+  function makeSenseFor(context) {
     let result = {}
     Object.keys(things).forEach(k => {
       let [thing, proxyH] = things[k]
@@ -135,7 +135,7 @@ export function LaSens<T>(
 
     wakeUp()
     if (awakened.actions) {
-      let ctxedThinx = useSensFor([className, modulePath, ...DEBUG_MODULE])
+      let ctxedThinx = makeSenseFor([className, modulePath, ...DEBUG_MODULE])
       let f = ctxedThinx.flows[modulePath]
       awakened.actions.bind(ctxedThinx)
       awakedActions[modulePath] = awakened.actions.apply(ctxedThinx, [Object.assign({f}, ctxedThinx), ctxedThinx])
@@ -158,7 +158,7 @@ export function LaSens<T>(
   return {
     renew,
     things,
-    newContext: useSensFor,
-    ...useSensFor(DEBUG_FACADE)
+    newContext: makeSenseFor,
+    ...makeSenseFor(DEBUG_FACADE)
   } as any
 }
