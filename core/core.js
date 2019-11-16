@@ -39,7 +39,7 @@ function LaSens(modules) {
         flows: [flows, debugHandlers_1.proxyLoggerFlow],
         actions: [actions, debugHandlers_1.proxyLoggerAction]
     };
-    function useSensFor(context) {
+    function makeSenseFor(context) {
         let result = {};
         Object.keys(things).forEach(k => {
             let [thing, proxyH] = things[k];
@@ -89,7 +89,7 @@ function LaSens(modules) {
         awakedFlow[modulePath] = module;
         decor_1.wakeUp();
         if (awakened.actions) {
-            let ctxedThinx = useSensFor([className, modulePath, ...utils_1.DEBUG_MODULE]);
+            let ctxedThinx = makeSenseFor([className, modulePath, ...utils_1.DEBUG_MODULE]);
             let f = ctxedThinx.flows[modulePath];
             awakened.actions.bind(ctxedThinx);
             awakedActions[modulePath] = awakened.actions.apply(ctxedThinx, [Object.assign({ f }, ctxedThinx), ctxedThinx]);
@@ -107,6 +107,6 @@ function LaSens(modules) {
         }
     }
     return Object.assign({ renew,
-        things, newContext: useSensFor }, useSensFor(utils_1.DEBUG_FACADE));
+        things, newContext: makeSenseFor }, makeSenseFor(utils_1.DEBUG_FACADE));
 }
 exports.LaSens = LaSens;

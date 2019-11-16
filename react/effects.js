@@ -1,17 +1,16 @@
-import { A, AFlow } from 'alak'
-import { useCallback, useEffect, useState } from 'react'
-
-
-export function useFlow<T>(flow: AFlow<T>):[T, AFlow<T>] {
-  const [state, mutate] = useState(flow.value)
-  useEffect(() => {
-    flow.up(mutate)
-    return () => flow.down(mutate)
-  }, [flow])
-  // if (state != value) mutate(value)
-  return [state, useCallback(flow, [flow])]
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const react_1 = require("react");
+function useFlow(flow) {
+    const [state, mutate] = react_1.useState(flow.value);
+    react_1.useEffect(() => {
+        flow.up(mutate);
+        return () => flow.down(mutate);
+    }, [flow]);
+    // if (state != value) mutate(value)
+    return [state, react_1.useCallback(flow, [flow])];
 }
-
+exports.useFlow = useFlow;
 // function useBusy(flowId: string): [T, boolean?] {
 //   const [value, flow] = holy(flowId)
 //   const [state, mutate] = useState(value)
