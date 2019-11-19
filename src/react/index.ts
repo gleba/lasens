@@ -31,6 +31,24 @@ export function useComputeFlow<T, U>(flow: AFlow<T>, mixin:(v:T)=>U):[U] {
   return [state]
 }
 
+
+export function useFlowFx<T>(flow: AFlow<T>, effectFn:(v:T)=>void):[T] {
+  let lastValue = flow.value
+  const [state, mutate] = useState(flow.value)
+  let mutateFx = v => {
+    if (lastValue !== v) {
+      lastValue = v
+      effectFn(v)
+      mutate(v)
+    }
+  }
+  useEffect(() => {
+    flow.up(mutateFx)
+    return () => flow.down(mutateFx)
+  }, [flow])
+  return [state]
+}
+
 export function useASyncFlow<T, U>(flow: AFlow<T>, mixin:(v:T)=>U):[U, Boolean] {
   const [state, mutate] = useState(flow.value)
   let busy
