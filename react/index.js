@@ -28,6 +28,23 @@ function useComputeFlow(flow, mixin) {
     return [state];
 }
 exports.useComputeFlow = useComputeFlow;
+function useFlowFx(flow, effectFn) {
+    let lastValue = flow.value;
+    const [state, mutate] = react_1.useState(flow.value);
+    let mutateFx = v => {
+        if (lastValue !== v) {
+            lastValue = v;
+            effectFn(v);
+            mutate(v);
+        }
+    };
+    react_1.useEffect(() => {
+        flow.up(mutateFx);
+        return () => flow.down(mutateFx);
+    }, [flow]);
+    return [state];
+}
+exports.useFlowFx = useFlowFx;
 function useASyncFlow(flow, mixin) {
     const [state, mutate] = react_1.useState(flow.value);
     let busy;
