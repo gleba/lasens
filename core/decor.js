@@ -107,7 +107,7 @@ function wakeUp() {
             let decor = decors[v];
             switch (v) {
                 case Decor.Getter:
-                    flow.useWarp(decor);
+                    flow.useGetter(decor);
                     flow();
                     break;
                 case Decor.Change:
