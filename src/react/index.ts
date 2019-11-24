@@ -49,7 +49,7 @@ export function useFlowFx<T>(flow: AFlow<T>, effectFn:(v:T)=>void):[T] {
   return [state]
 }
 
-export function useASyncFlow<T, U>(flow: AFlow<T>, mixin:(v:T)=>U):[U, Boolean] {
+export function useASyncFlow<T, U>(flow: AFlow<T>, mixin?:(v:T)=>U):[U, Boolean] {
   const [state, mutate] = useState(flow.value)
   let busy
   if (flow.isAsync) {
