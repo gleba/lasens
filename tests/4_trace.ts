@@ -49,7 +49,6 @@ const MyComponent = {
   template: `
     <div>
       {{ $flow.base.ax }}
-<!--      {{ $flow.base.a1.v }}-->
     </div>
   `
 }

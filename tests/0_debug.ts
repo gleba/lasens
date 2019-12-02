@@ -1,15 +1,14 @@
 import { test } from './ouput.shema'
-import {ISens, La, LaSens} from "../src/core";
+import { ISens, La, LaSens, qubit } from '../src/core'
 
 export class BaseModule {
+  @qubit word
 
-  word = "wait"
-
-  actions({f}:La<BaseModule>) {
+  actions({ f }: La<BaseModule>) {
     return {
-      async action2(){
-        f.word("hello")
-      }
+      say() {
+        f.word('hello')
+      },
     }
   }
 }
@@ -22,7 +21,7 @@ export type XStore = ISens<typeof modules>
 test('init store', async ({ ok, end, fall, plan }) => {
   let store = LaSens(modules)
   store.renew()
-  store.actions.base.action2()
+  store.actions.base.say()
+  ok(store.state.base.word == 'hello', 'word is hello')
   end()
 })
-

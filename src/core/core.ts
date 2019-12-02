@@ -5,6 +5,7 @@ import {applyDecors, holisticLive, wakeUp} from './decor'
 import {alive, clearObject, DEBUG_FACADE, DEBUG_MODULE, DEBUG_INIT_FLOW, primitiveExceptions} from './utils'
 import {alwaysErrorProxy, proxyLoggerAction, proxyLoggerFlow, safeModulePathHandler} from "./debugHandlers";
 import {createPrivateKey} from "crypto";
+import {stateProxyHandler} from "./stateProxyHandler";
 
 // type PropType<TObj, TProp extends keyof TObj> = TObj[TProp];
 
@@ -41,12 +42,11 @@ export const META_CLASSNAME = 'classname'
 export interface ISens<T> {
   actions: ActionModules<T>
   flows: FlowModules<StateModules<T>>
-
+  state: StateModules<T>
   renew()
 
   newContext(context: any): LaSensType<T>
 }
-
 
 export function LaSens<T>(
   modules: T,
@@ -76,23 +76,26 @@ export function LaSens<T>(
       return m
     },
   }
+
   const flows = new Proxy(awakedFlow, graphProxyHandler) as FlowModules<StateModules<T>>
   const actions = new Proxy(awakedActions, graphProxyHandler) as ActionModules<T>
+  const state = new Proxy(flows, stateProxyHandler()) as ActionModules<T>
   const things = {
     flows: [flows, proxyLoggerFlow],
-    actions: [actions, proxyLoggerAction]
+    actions: [actions, proxyLoggerAction],
+    state
   } as any
 
   function makeSenseFor(context) {
-    let result = {}
-    Object.keys(things).forEach(k => {
-      let [thing, proxyH] = things[k]
-      if (A.canLog) {
-        result[k] = new Proxy(thing, proxyH(context))
-      } else {
-        result[k] = thing
-      }
-    })
+    let result = {state} as any
+    ;['flows', 'actions'].forEach(k => {
+        let [thing, proxyH] = things[k]
+        if (A.canLog) {
+          result[k] = new Proxy(thing, proxyH(context))
+        } else {
+          result[k] = thing
+        }
+      })
     return result as LaSensType<T>
   }
 
@@ -135,10 +138,10 @@ export function LaSens<T>(
 
     wakeUp()
     if (awakened.actions) {
-      let ctxedThinx = makeSenseFor([className, modulePath, ...DEBUG_MODULE])
-      let f = ctxedThinx.flows[modulePath]
-      awakened.actions.bind(ctxedThinx)
-      awakedActions[modulePath] = awakened.actions.apply(ctxedThinx, [Object.assign({f}, ctxedThinx), ctxedThinx])
+      let thingsInContext = makeSenseFor([className, modulePath, ...DEBUG_MODULE])
+      let f = thingsInContext.flows[modulePath]
+      awakened.actions.bind(thingsInContext)
+      awakedActions[modulePath] = awakened.actions.apply(thingsInContext, [Object.assign({f}, thingsInContext), thingsInContext])
     }
     return false
   }
