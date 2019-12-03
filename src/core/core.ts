@@ -4,7 +4,6 @@ import A from 'alak'
 import {applyDecors, holisticLive, wakeUp} from './decor'
 import {alive, clearObject, DEBUG_FACADE, DEBUG_MODULE, DEBUG_INIT_FLOW, primitiveExceptions} from './utils'
 import {alwaysErrorProxy, proxyLoggerAction, proxyLoggerFlow, safeModulePathHandler} from "./debugHandlers";
-import {createPrivateKey} from "crypto";
 import {stateProxyHandler} from "./stateProxyHandler";
 
 // type PropType<TObj, TProp extends keyof TObj> = TObj[TProp];

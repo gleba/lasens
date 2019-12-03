@@ -80,6 +80,7 @@ function LaSens(modules) {
             if (isHolistic) {
                 flow.addMeta(exports.META_HOLISTIC, initialFlowStateValue);
             }
+            flow.setName(flowName);
             flow.setId(modulePath + '.' + flowName);
             flow.addMeta(exports.META_CLASSNAME, className);
             if (isAliveValue && !isHolistic) {
