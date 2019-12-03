@@ -76,10 +76,7 @@ const asEventHandler: any = e => {
   return ''
 }
 
-export function useInputFlow<T>(
-  flow: AFlow<T>,
-  effectFn?: (v: T) => void,
-): [T, (e: { target: { value?: any; checked?: any } }) => void] {
+export function useInputFlow<T>(flow: AFlow<T>, effectFn?: (v: T) => void): [T, any] {
   let lastValue = flow.value
   const [state, mutate] = useState(flow.value)
   const mutateFx = v => {
