@@ -68,7 +68,7 @@ export function useASyncFlow<T, U>(flow: AFlow<T>, mixin?: (v: T) => U): [U, Boo
   }
 }
 
-const asEventHandler = e => {
+const asEventHandler: any = e => {
   if (e.target) {
     if ('value' in e.target) return e.target.value
     if ('checked' in e.target) return e.target.checked

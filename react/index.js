@@ -70,8 +70,8 @@ function useASyncFlow(flow, mixin) {
 exports.useASyncFlow = useASyncFlow
 const asEventHandler = e => {
   if (e.target) {
-    if (e.target.value) return e.target.value
-    if (e.target.checked) return e.target.checked
+    if ('value' in e.target) return e.target.value
+    if ('checked' in e.target) return e.target.checked
   }
   return ''
 }
