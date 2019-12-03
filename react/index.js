@@ -73,13 +73,14 @@ const asEventHandler = e => {
     if (e.target.value) return e.target.value
     if (e.target.checked) return e.target.checked
   }
-  return e
+  return ''
 }
 function useInputFlow(flow, effectFn) {
   let lastValue = flow.value
   const [state, mutate] = react_1.useState(flow.value)
   const mutateFx = v => {
     if (lastValue !== v) {
+      if (flow.value != v) flow(v)
       lastValue = v
       if (effectFn) effectFn(v)
       mutate(v)
