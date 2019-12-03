@@ -125,6 +125,7 @@ export function LaSens<T>(
       if (isHolistic) {
         flow.addMeta(META_HOLISTIC, initialFlowStateValue)
       }
+      flow.setName(flowName)
       flow.setId(modulePath + '.' + flowName)
       flow.addMeta(META_CLASSNAME, className)
       if (isAliveValue && !isHolistic) {

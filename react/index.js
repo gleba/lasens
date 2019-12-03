@@ -71,4 +71,31 @@ function useASyncFlow(flow, mixin) {
     }
 }
 exports.useASyncFlow = useASyncFlow;
-//
+const asEventHandler = e => {
+    if (e.target) {
+        if (e.target.value)
+            return e.target.value;
+        if (e.target.checked)
+            return e.target.checked;
+    }
+    return e;
+};
+function useInputFlow(flow, effectFn) {
+    let lastValue = flow.value;
+    const [state, mutate] = react_1.useState(flow.value);
+    const mutateFx = v => {
+        if (lastValue !== v) {
+            lastValue = v;
+            if (effectFn)
+                effectFn(v);
+            mutate(v);
+        }
+    };
+    const eventHandler = v => mutateFx(asEventHandler(v));
+    react_1.useEffect(() => {
+        flow.up(mutateFx);
+        return () => flow.down(mutateFx);
+    }, [flow]);
+    return [state, eventHandler];
+}
+exports.useInputFlow = useInputFlow;
