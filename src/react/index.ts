@@ -71,4 +71,32 @@ export function useASyncFlow<T, U>(flow: AFlow<T>, mixin?:(v:T)=>U):[U, Boolean]
     return [state, false]
   }
 }
-//
+
+
+const asEventHandler = e=>{
+  if (e.target) {
+    if (e.target.value)
+      return e.target.value
+    if (e.target.checked)
+      return e.target.checked
+  }
+  return e
+}
+
+export function useInputFlow<T>(flow: AFlow<T>, effectFn?:(v:T)=>void):[T, (e:{target:{value?:any, checked?:any}})=>void ] {
+  let lastValue = flow.value
+  const [state, mutate] = useState(flow.value)
+  const mutateFx = v => {
+    if (lastValue !== v) {
+      lastValue = v
+      if (effectFn) effectFn(v)
+      mutate(v)
+    }
+  }
+  const eventHandler = v => mutateFx(asEventHandler(v))
+  useEffect(() => {
+    flow.up(mutateFx)
+    return () => flow.down(mutateFx)
+  }, [flow])
+  return [state, eventHandler]
+}

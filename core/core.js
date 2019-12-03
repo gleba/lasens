@@ -4,6 +4,7 @@ const alak_1 = require("alak");
 const decor_1 = require("./decor");
 const utils_1 = require("./utils");
 const debugHandlers_1 = require("./debugHandlers");
+const stateProxyHandler_1 = require("./stateProxyHandler");
 exports.META_HOLISTIC = 'holistic';
 exports.META_CLASSNAME = 'classname';
 function LaSens(modules) {
@@ -35,13 +36,15 @@ function LaSens(modules) {
     };
     const flows = new Proxy(awakedFlow, graphProxyHandler);
     const actions = new Proxy(awakedActions, graphProxyHandler);
+    const state = new Proxy(flows, stateProxyHandler_1.stateProxyHandler());
     const things = {
         flows: [flows, debugHandlers_1.proxyLoggerFlow],
-        actions: [actions, debugHandlers_1.proxyLoggerAction]
+        actions: [actions, debugHandlers_1.proxyLoggerAction],
+        state
     };
     function makeSenseFor(context) {
-        let result = {};
-        Object.keys(things).forEach(k => {
+        let result = { state };
+        ['flows', 'actions'].forEach(k => {
             let [thing, proxyH] = things[k];
             if (alak_1.default.canLog) {
                 result[k] = new Proxy(thing, proxyH(context));
@@ -89,10 +92,10 @@ function LaSens(modules) {
         awakedFlow[modulePath] = module;
         decor_1.wakeUp();
         if (awakened.actions) {
-            let ctxedThinx = makeSenseFor([className, modulePath, ...utils_1.DEBUG_MODULE]);
-            let f = ctxedThinx.flows[modulePath];
-            awakened.actions.bind(ctxedThinx);
-            awakedActions[modulePath] = awakened.actions.apply(ctxedThinx, [Object.assign({ f }, ctxedThinx), ctxedThinx]);
+            let thingsInContext = makeSenseFor([className, modulePath, ...utils_1.DEBUG_MODULE]);
+            let f = thingsInContext.flows[modulePath];
+            awakened.actions.bind(thingsInContext);
+            awakedActions[modulePath] = awakened.actions.apply(thingsInContext, [Object.assign({ f }, thingsInContext), thingsInContext]);
         }
         return false;
     }

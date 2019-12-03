@@ -27,6 +27,7 @@ export declare const META_CLASSNAME = "classname";
 export interface ISens<T> {
     actions: ActionModules<T>;
     flows: FlowModules<StateModules<T>>;
+    state: StateModules<T>;
     renew(): any;
     newContext(context: any): LaSensType<T>;
 }
