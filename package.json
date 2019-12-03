@@ -1,6 +1,6 @@
 {
   "name": "lasens",
-  "version": "0.0.31",
+  "version": "0.0.32",
   "description": "La Sens Store",
   "main": "core/index.js",
   "typings": "core/index.d.ts",
@@ -29,6 +29,6 @@
     "vue-template-compiler": "^2.6.10"
   },
   "dependencies": {
-    "alak": "^1.0.19"
+    "alak": "^1.0.20"
   }
 }
