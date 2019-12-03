@@ -14,14 +14,14 @@ export function useFlow<T>(flow: AFlow<T>):[T, AFlow<T>] {
 }
 
 
-export function useComputeFlow<T, U>(flow: AFlow<T>, mixin:(v:T)=>U):[U] {
+export function useComputeFlow<T, U>(flow: AFlow<T>, computeFn:(v:T)=>U):[U] {
   let lastValue = flow.value
-  let value = mixin(lastValue)
+  let value = computeFn(lastValue)
   const [state, mutate] = useState(value)
   let mutateFx = v => {
     if (lastValue !== v) {
       lastValue = v
-      mutate(mixin(v))
+      mutate(computeFn(v))
     }
   }
   useEffect(() => {
@@ -99,4 +99,11 @@ export function useInputFlow<T>(flow: AFlow<T>, effectFn?:(v:T)=>void):[T, (e:{t
     return () => flow.down(mutateFx)
   }, [flow])
   return [state, eventHandler]
+}
+
+export function useOnFlow<T>(flow: AFlow<T>, listingFn:(v:T)=>void, ...diff:any[]):void {
+  useEffect(() => {
+    flow.up(listingFn)
+    return () => flow.down(listingFn)
+  }, [flow, ...diff])
 }
