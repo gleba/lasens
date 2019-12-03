@@ -1,9 +1,7 @@
 import { A, AFlow } from 'alak'
 import { useCallback, useEffect, useState } from 'react'
 
-
-
-export function useFlow<T>(flow: AFlow<T>):[T, AFlow<T>] {
+export function useFlow<T>(flow: AFlow<T>): [T, AFlow<T>] {
   const [state, mutate] = useState(flow.value)
   useEffect(() => {
     flow.up(mutate)
@@ -13,8 +11,7 @@ export function useFlow<T>(flow: AFlow<T>):[T, AFlow<T>] {
   return [state, useCallback(flow, [flow])]
 }
 
-
-export function useComputeFlow<T, U>(flow: AFlow<T>, computeFn:(v:T)=>U):[U] {
+export function useComputeFlow<T, U>(flow: AFlow<T>, computeFn: (v: T) => U): [U] {
   let lastValue = flow.value
   let value = computeFn(lastValue)
   const [state, mutate] = useState(value)
@@ -31,8 +28,7 @@ export function useComputeFlow<T, U>(flow: AFlow<T>, computeFn:(v:T)=>U):[U] {
   return [state]
 }
 
-
-export function useFlowFx<T>(flow: AFlow<T>, effectFn:(v:T)=>void):[T] {
+export function useFlowFx<T>(flow: AFlow<T>, effectFn: (v: T) => void): [T] {
   let lastValue = flow.value
   const [state, mutate] = useState(flow.value)
   let mutateFx = v => {
@@ -49,7 +45,7 @@ export function useFlowFx<T>(flow: AFlow<T>, effectFn:(v:T)=>void):[T] {
   return [state]
 }
 
-export function useASyncFlow<T, U>(flow: AFlow<T>, mixin?:(v:T)=>U):[U, Boolean] {
+export function useASyncFlow<T, U>(flow: AFlow<T>, mixin?: (v: T) => U): [U, Boolean] {
   const [state, mutate] = useState(flow.value)
   let busy
   if (flow.isAsync) {
@@ -67,27 +63,28 @@ export function useASyncFlow<T, U>(flow: AFlow<T>, mixin?:(v:T)=>U):[U, Boolean]
   }, [flow])
   if (busy) return [state, busy.now]
   else {
-    console.warn('flow [',flow.id, '] - is not an asynchronous')
+    console.warn('flow [', flow.id, '] - is not an asynchronous')
     return [state, false]
   }
 }
 
-
-const asEventHandler = e=>{
+const asEventHandler = e => {
   if (e.target) {
-    if (e.target.value)
-      return e.target.value
-    if (e.target.checked)
-      return e.target.checked
+    if (e.target.value) return e.target.value
+    if (e.target.checked) return e.target.checked
   }
-  return e
+  return ''
 }
 
-export function useInputFlow<T>(flow: AFlow<T>, effectFn?:(v:T)=>void):[T, (e:{target:{value?:any, checked?:any}})=>void ] {
+export function useInputFlow<T>(
+  flow: AFlow<T>,
+  effectFn?: (v: T) => void,
+): [T, (e: { target: { value?: any; checked?: any } }) => void] {
   let lastValue = flow.value
   const [state, mutate] = useState(flow.value)
   const mutateFx = v => {
     if (lastValue !== v) {
+      if (flow.value != v) flow(v)
       lastValue = v
       if (effectFn) effectFn(v)
       mutate(v)
@@ -101,7 +98,7 @@ export function useInputFlow<T>(flow: AFlow<T>, effectFn?:(v:T)=>void):[T, (e:{t
   return [state, eventHandler]
 }
 
-export function useOnFlow<T>(flow: AFlow<T>, listingFn:(v:T)=>void, ...diff:any[]):void {
+export function useOnFlow<T>(flow: AFlow<T>, listingFn: (v: T) => void, ...diff: any[]): void {
   useEffect(() => {
     flow.up(listingFn)
     return () => flow.down(listingFn)
