@@ -1,22 +1,23 @@
-import {FromClass, ISens, LaAction, META_CLASSNAME, META_HOLISTIC} from './core'
-import {A, AFlow} from "alak";
-import {applyDecors, holisticLive, wakeUp} from "./decor";
-import {alive, DEBUG_DYN_MODULE, DEBUG_FACADE, DEBUG_INIT_FLOW} from "./utils";
-import {proxyLoggerDynamique, proxyLoggerFlow, safeModulePathHandler} from "./debugHandlers";
+import { FromClass, ISens, LaAction, META_CLASSNAME, META_HOLISTIC } from './core'
+import { A, AFlow } from 'alak'
+import { applyDecors, holisticLive, wakeUp } from './decor'
+import { alive, DEBUG_DYN_MODULE, DEBUG_FACADE, DEBUG_INIT_FLOW } from './utils'
+import { proxyLoggerDynamique, proxyLoggerFlow, safeModulePathHandler } from './debugHandlers'
 
 type StateModule<T> = Omit<T, 'actions'>
 type FlowModule<T> = { readonly [K in keyof T]: AFlow<T[K]> }
-
-type DynamiqueModule<T> = {
-  actions: LaAction<T>
-  flow: FlowModule<StateModule<T>>
+declare type QuickModule<T> = {
+  readonly [K in keyof T]: T[K]
 }
 
 export interface La<T> {
   f: FlowModule<StateModule<T>>
-  state: FlowModule<StateModule<T>>
+  q: QuickModule<StateModule<T>>
 }
-
+type DynamiqueModule<T> = {
+  actions: LaAction<T>
+  flow: FlowModule<StateModule<T>>
+}
 
 type DynamiqueModules<T> = {
   [K in keyof T]: {
@@ -28,7 +29,6 @@ type DynamiqueModules<T> = {
   }
 }
 
-
 export interface IDynamique<U, T> extends ISens<U> {
   dynamique: DynamiqueModules<T>
 }
@@ -38,7 +38,7 @@ export function Dynamique<U, T>(store: ISens<U>, modules: T): IDynamique<U, T> {
     let instance = new moduleClass()
     let className = instance.constructor.name
     let holistic = holisticLive(instance, className)
-    let module = new Proxy({_: {moduleName: instance, className}}, safeModulePathHandler)
+    let module = new Proxy({ _: { moduleName: instance, className } }, safeModulePathHandler)
     Object.keys(instance).forEach(flowName => {
       let flow = A.flow()
       let initialFlowStateValue = instance[flowName]
@@ -62,14 +62,14 @@ export function Dynamique<U, T>(store: ISens<U>, modules: T): IDynamique<U, T> {
       let ctxedThinx = store.newContext(ctxPath)
       let f
       if (A.canLog) {
-        let p = new Proxy({x: module}, proxyLoggerFlow(ctxPath))
+        let p = new Proxy({ x: module }, proxyLoggerFlow(ctxPath))
         f = p.x
       } else {
         f = module
       }
-      let context = Object.assign({id}, ctxedThinx)
+      let context = Object.assign({ id }, ctxedThinx)
       instance.actions.bind(context)
-      actions = instance.actions(Object.assign({f}, context))
+      actions = instance.actions(Object.assign({ f }, context))
       actions.id = id
       if (actions.new) {
         actions.new(argument)
@@ -77,11 +77,11 @@ export function Dynamique<U, T>(store: ISens<U>, modules: T): IDynamique<U, T> {
     }
     return {
       flows: module,
-      actions
+      actions,
     }
   }
 
-  const satMap = store['satelliteMap'] = new Map()
+  const satMap = (store['satelliteMap'] = new Map())
 
   function moduleOperations(moduleClass) {
     let instancesMap = satMap.has(moduleClass) ? satMap.get(moduleClass) : new Map()
@@ -91,10 +91,10 @@ export function Dynamique<U, T>(store: ISens<U>, modules: T): IDynamique<U, T> {
       let uid = Math.random()
       if (argument) {
         switch (typeof argument) {
-          case "string":
-          case "number":
-          case "symbol":
-          case "bigint":
+          case 'string':
+          case 'number':
+          case 'symbol':
+          case 'bigint':
             id = argument
             break
           default:
@@ -102,8 +102,7 @@ export function Dynamique<U, T>(store: ISens<U>, modules: T): IDynamique<U, T> {
         }
       }
       if (!id) id = uid
-      if (instancesMap.has(id))
-        return instancesMap.get(id)
+      if (instancesMap.has(id)) return instancesMap.get(id)
 
       const module = create(moduleClass, id, argument)
       instancesMap.set(id, module)
@@ -113,26 +112,27 @@ export function Dynamique<U, T>(store: ISens<U>, modules: T): IDynamique<U, T> {
     }
 
     const broadcastHandler = {
-      get({way}, key) {
-        return (...args) => instancesMap.forEach(m => {
-          let fway = m[way]
-          if (fway) {
-            let fkey = fway[key]
-            if (fkey) {
-              return fkey(...args)
+      get({ way }, key) {
+        return (...args) =>
+          instancesMap.forEach(m => {
+            let fway = m[way]
+            if (fway) {
+              let fkey = fway[key]
+              if (fkey) {
+                return fkey(...args)
+              }
             }
-          }
-        })
-      }
+          })
+      },
     }
     return Object.assign(createFrom, {
       broadcast: {
-        flows: new Proxy({way: "flows"}, broadcastHandler),
-        actions: new Proxy({way: "actions"}, broadcastHandler)
+        flows: new Proxy({ way: 'flows' }, broadcastHandler),
+        actions: new Proxy({ way: 'actions' }, broadcastHandler),
       },
       create: createFrom,
-      getById: id => instancesMap.has(id) ? instancesMap.get(id) : undefined,
-      removeById: id => instancesMap.has(id) ? instancesMap.delete(id) : undefined
+      getById: id => (instancesMap.has(id) ? instancesMap.get(id) : undefined),
+      removeById: id => (instancesMap.has(id) ? instancesMap.delete(id) : undefined),
     })
   }
 
@@ -140,11 +140,13 @@ export function Dynamique<U, T>(store: ISens<U>, modules: T): IDynamique<U, T> {
     get(o, key) {
       let m = o[key]
       if (m) return moduleOperations(m)
-      else throw "Dynamique module " + key.toString() + " not present"
-    }
+      else throw 'Dynamique module ' + key.toString() + ' not present'
+    },
   })
 
   store['things'].dynamique = [dynamique, proxyLoggerDynamique]
-  store['dynamique'] = A.canLog ? new Proxy(dynamique, proxyLoggerDynamique(DEBUG_FACADE)) : dynamique
+  store['dynamique'] = A.canLog
+    ? new Proxy(dynamique, proxyLoggerDynamique(DEBUG_FACADE))
+    : dynamique
   return store as any
 }

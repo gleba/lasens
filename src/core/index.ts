@@ -1,9 +1,8 @@
-import X from "alak";
+import X from 'alak'
 
-export {qubit, holistic, stored} from "./decor";
+export { qubit, holistic, stored } from './decor'
 
-export {LaSens, LaSensType, ISens} from "./core";
-export {La, Dynamique, IDynamique} from "./dynamique";
+export { La, LaSens, LaSensType, ISens } from './core'
+export { Dynamique, IDynamique } from './dynamique'
 
 export const A = X
-

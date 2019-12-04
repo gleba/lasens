@@ -2,9 +2,9 @@ import { test } from './ouput.shema'
 import { ISens, La, LaSens, qubit } from '../src/core'
 
 export class BaseModule {
-  @qubit word
+  @qubit word: string
 
-  actions({ f }: La<BaseModule>) {
+  actions({ f, q }: La<BaseModule>) {
     return {
       say() {
         f.word('hello')

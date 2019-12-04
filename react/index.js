@@ -68,7 +68,8 @@ function useASyncFlow(flow, mixin) {
   }
 }
 exports.useASyncFlow = useASyncFlow
-const asEventHandler = e => {
+const asEventHandler = (e, value) => {
+  if (value != undefined) return value
   if (e.target) {
     if ('value' in e.target) return e.target.value
     if ('checked' in e.target) return e.target.checked
@@ -86,7 +87,7 @@ function useInputFlow(flow, effectFn) {
       mutate(v)
     }
   }
-  const eventHandler = v => mutateFx(asEventHandler(v))
+  const eventHandler = (...a) => mutateFx(asEventHandler(...a))
   react_1.useEffect(() => {
     flow.up(mutateFx)
     return () => flow.down(mutateFx)
