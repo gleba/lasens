@@ -1,5 +1,6 @@
 import { A, AFlow } from 'alak'
 import { useCallback, useEffect, useState } from 'react'
+import { alive } from '../core/utils'
 
 export function useFlow<T>(flow: AFlow<T>): [T, AFlow<T>] {
   const [state, mutate] = useState(flow.value)
@@ -30,7 +31,7 @@ export function useComputeFlow<T, U>(flow: AFlow<T>, computeFn: (v: T) => U): [U
 
 export function useFlowFx<T>(flow: AFlow<T>, effectFn: (v: T) => void): [T] {
   let lastValue = flow.value
-  const [state, mutate] = useState(flow.value)
+  const [state, mutate] = alive(lastValue) ? useState(lastValue) : useState()
   let mutateFx = v => {
     if (lastValue !== v) {
       lastValue = v
@@ -46,7 +47,7 @@ export function useFlowFx<T>(flow: AFlow<T>, effectFn: (v: T) => void): [T] {
 }
 
 export function useASyncFlow<T, U>(flow: AFlow<T>, mixin?: (v: T) => U): [U, Boolean] {
-  const [state, mutate] = useState(flow.value)
+  const [state, mutate] = alive(flow.value) ? useState(flow.value) : useState()
   let busy
   if (flow.isAsync) {
     const [now, change] = useState(false)
@@ -80,7 +81,7 @@ const asEventHandler = (e, value) => {
 
 export function useInputFlow<T>(flow: AFlow<T>, effectFn?: (v: T) => void): [T, any] {
   let lastValue = flow.value
-  const [state, mutate] = useState(flow.value)
+  const [state, mutate] = alive(lastValue) ? useState(lastValue) : useState()
   const mutateFx = v => {
     if (lastValue !== v) {
       if (flow.value != v) flow(v)

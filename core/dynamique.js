@@ -1,64 +1,15 @@
 'use strict'
 Object.defineProperty(exports, '__esModule', { value: true })
-const core_1 = require('./core')
 const alak_1 = require('alak')
-const decor_1 = require('./decor')
 const utils_1 = require('./utils')
 const debugHandlers_1 = require('./debugHandlers')
+const decor_1 = require('./decor')
+const stateProxyHandler_1 = require('./stateProxyHandler')
 function Dynamique(store, modules) {
-  function create(moduleClass, id, argument) {
-    let instance = new moduleClass()
-    let className = instance.constructor.name
-    let holistic = decor_1.holisticLive(instance, className)
-    let module = new Proxy(
-      { _: { moduleName: instance, className } },
-      debugHandlers_1.safeModulePathHandler,
-    )
-    Object.keys(instance).forEach(flowName => {
-      let flow = alak_1.A.flow()
-      let initialFlowStateValue = instance[flowName]
-      let isHolistic = holistic[flowName]
-      let isAliveValue = utils_1.alive(initialFlowStateValue)
-      if (isHolistic) {
-        flow.addMeta(core_1.META_HOLISTIC, initialFlowStateValue)
-      }
-      flow.setId(className + '.' + id + '.' + flowName)
-      flow.addMeta(core_1.META_CLASSNAME, className)
-      if (isAliveValue && !isHolistic) {
-        flow(initialFlowStateValue, utils_1.DEBUG_INIT_FLOW)
-      }
-      decor_1.applyDecors(flow, className, flowName)
-      module[flowName] = flow
-    })
-    decor_1.wakeUp()
-    let actions
-    if (instance.actions) {
-      let ctxPath = [id, className, ...utils_1.DEBUG_DYN_MODULE]
-      let ctxedThinx = store.newContext(ctxPath)
-      let f
-      if (alak_1.A.canLog) {
-        let p = new Proxy({ x: module }, debugHandlers_1.proxyLoggerFlow(ctxPath))
-        f = p.x
-      } else {
-        f = module
-      }
-      let context = Object.assign({ id }, ctxedThinx)
-      instance.actions.bind(context)
-      actions = instance.actions(Object.assign({ f }, context))
-      actions.id = id
-      if (actions.new) {
-        actions.new(argument)
-      }
-    }
-    return {
-      flows: module,
-      actions,
-    }
-  }
   const satMap = (store['satelliteMap'] = new Map())
   function moduleOperations(moduleClass) {
-    let instancesMap = satMap.has(moduleClass) ? satMap.get(moduleClass) : new Map()
-    function createFrom(argument) {
+    const instancesMap = satMap.has(moduleClass) ? satMap.get(moduleClass) : new Map()
+    function create(argument) {
       let id
       let uid = Math.random()
       if (argument) {
@@ -75,32 +26,57 @@ function Dynamique(store, modules) {
       }
       if (!id) id = uid
       if (instancesMap.has(id)) return instancesMap.get(id)
-      const module = create(moduleClass, id, argument)
-      instancesMap.set(id, module)
+      const instance = new moduleClass()
+      const [safeModule, arousal] = decor_1.diamondMoment(instance, id)
+      decor_1.wakeUp(arousal)
+      let actions
+      if (instance.actions) {
+        let contextDebug = [id, instance.constructor.name, ...utils_1.DEBUG_DYN_MODULE]
+        let context = store.newContext(contextDebug)
+        let f
+        if (alak_1.A.canLog) {
+          let p = new Proxy({ x: safeModule }, debugHandlers_1.proxyLoggerFlow(contextDebug))
+          f = p.x
+        } else {
+          f = safeModule
+        }
+        let q = stateProxyHandler_1.stateModuleProxy(safeModule)
+        context = Object.assign({ f, q, id }, context)
+        actions = instance.actions.apply(context, [context, context])
+        actions.id = id
+        if (actions.new) {
+          actions.new(argument)
+        }
+      }
+      return {
+        flows: safeModule,
+        actions,
+      }
+      instancesMap.set(id, safeModule)
       satMap.set(moduleClass, instancesMap)
-      module['id'] = id
+      safeModule['id'] = id
       return module
     }
     const broadcastHandler = {
       get({ way }, key) {
         return (...args) =>
           instancesMap.forEach(m => {
-            let fway = m[way]
-            if (fway) {
-              let fkey = fway[key]
-              if (fkey) {
-                return fkey(...args)
+            let castWay = m[way]
+            if (castWay) {
+              let flowKey = castWay[key]
+              if (flowKey) {
+                return flowKey(...args)
               }
             }
           })
       },
     }
-    return Object.assign(createFrom, {
+    return Object.assign(create, {
       broadcast: {
         flows: new Proxy({ way: 'flows' }, broadcastHandler),
         actions: new Proxy({ way: 'actions' }, broadcastHandler),
       },
-      create: createFrom,
+      create,
       getById: id => (instancesMap.has(id) ? instancesMap.get(id) : undefined),
       removeById: id => (instancesMap.has(id) ? instancesMap.delete(id) : undefined),
     })

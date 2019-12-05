@@ -32,8 +32,7 @@ export declare type LaSensType<T> = {
   flows: FlowModules<StateModules<T>>
   state: StateModules<T>
 }
-export declare const META_HOLISTIC = 'holistic'
-export declare const META_CLASSNAME = 'classname'
+export declare const META_CLASS = 'class'
 export interface ISens<T> {
   actions: ActionModules<T>
   flows: FlowModules<StateModules<T>>

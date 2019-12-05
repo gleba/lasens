@@ -5,8 +5,9 @@ const decor_1 = require('./decor')
 const utils_1 = require('./utils')
 const debugHandlers_1 = require('./debugHandlers')
 const stateProxyHandler_1 = require('./stateProxyHandler')
-exports.META_HOLISTIC = 'holistic'
-exports.META_CLASSNAME = 'classname'
+// export const META_HOLISTIC = 'holistic'
+// export const META_CLASSNAME = 'classname'
+exports.META_CLASS = 'class'
 function LaSens(modules) {
   const availableModules = () => 'available modules: ' + Object.keys(sleepingModules).toString()
   const sleepingModules = {}
@@ -19,7 +20,7 @@ function LaSens(modules) {
     get(o, key) {
       let m = o[key]
       if (!m) {
-        let reasonToSleep = awakeModule(key)
+        let reasonToSleep = wakeUpModule(key)
         if (!reasonToSleep) {
           m = o[key]
         } else if (utils_1.primitiveExceptions[key]) {
@@ -56,7 +57,7 @@ function LaSens(modules) {
     return result
   }
   // const state = new Proxy(awakedActions, graphProxyHandler) as ActionModules<T>
-  function awakeModule(modulePath) {
+  function wakeUpModule(modulePath) {
     if (utils_1.primitiveExceptions[modulePath]) {
       return debugHandlers_1.alwaysErrorProxy(availableModules())
     }
@@ -67,43 +68,17 @@ function LaSens(modules) {
       console.warn(availableModulesMessage)
       return debugHandlers_1.alwaysErrorProxy(availableModulesMessage)
     }
+    const instance = new sleepingModule()
+    const [safeModule, arousal] = decor_1.diamondMoment(instance, modulePath)
+    awakedFlow[modulePath] = safeModule
+    decor_1.wakeUp(arousal)
     console.log('✓ awake module :', modulePath)
-    let awakened = new sleepingModule()
-    let className = awakened.constructor.name
-    let holistic = decor_1.holisticLive(awakened, className)
-    let module = new Proxy(
-      { _: { moduleName: modulePath, className } },
-      debugHandlers_1.safeModulePathHandler,
-    )
-    Object.keys(awakened).forEach(flowName => {
-      let flow = alak_1.default()
-      let initialFlowStateValue = awakened[flowName]
-      let isHolistic = holistic[flowName]
-      let isAliveValue = utils_1.alive(initialFlowStateValue)
-      if (isHolistic) {
-        flow.addMeta(exports.META_HOLISTIC, initialFlowStateValue)
-      }
-      flow.setName(flowName)
-      flow.setId(modulePath + '.' + flowName)
-      flow.addMeta(exports.META_CLASSNAME, className)
-      if (isAliveValue && !isHolistic) {
-        flow(initialFlowStateValue, utils_1.DEBUG_INIT_FLOW)
-      }
-      decor_1.applyDecors(flow, className, flowName)
-      module[flowName] = flow
-      flowMap[flow.id] = flow
-    })
-    awakedFlow[modulePath] = module
-    decor_1.wakeUp()
-    if (awakened.actions) {
-      let thingsInContext = makeSenseFor([className, modulePath, ...utils_1.DEBUG_MODULE])
-      let f = thingsInContext.flows[modulePath]
+    if (instance.actions) {
+      let context = makeSenseFor([instance.constructor, modulePath, ...utils_1.DEBUG_MODULE])
+      let f = context.flows[modulePath]
       let q = state[modulePath]
-      awakened.actions.bind(thingsInContext)
-      awakedActions[modulePath] = awakened.actions.apply(thingsInContext, [
-        Object.assign({ f, q }, thingsInContext),
-        thingsInContext,
-      ])
+      context = Object.assign(context, { f, q })
+      awakedActions[modulePath] = instance.actions.apply(context, [context, context])
     }
     return false
   }

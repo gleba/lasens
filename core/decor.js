@@ -1,131 +1,106 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const utils_1 = require("./utils");
-const localstore_1 = require("./localstore");
-var Decor;
-(function (Decor) {
-    Decor["Getter"] = "getter";
-    Decor["Wrapper"] = "wrapper";
-    Decor["Change"] = "change";
-    Decor["Stored"] = "stored";
-})(Decor || (Decor = {}));
-const decorModuleMap = {};
-const holisticFlowMap = {};
-const qubitFlowMap = {};
+'use strict'
+Object.defineProperty(exports, '__esModule', { value: true })
+const utils_1 = require('./utils')
+const localstore_1 = require('./localstore')
+const debugHandlers_1 = require('./debugHandlers')
+const alak_1 = require('alak')
+const core_1 = require('./core')
+var Decor
+;(function(Decor) {
+  Decor[(Decor['Alive'] = 0)] = 'Alive'
+  Decor[(Decor['Stored'] = 1)] = 'Stored'
+  Decor[(Decor['LazyGetter'] = 2)] = 'LazyGetter'
+  Decor[(Decor['Getter'] = 3)] = 'Getter'
+  Decor[(Decor['Wrapper'] = 4)] = 'Wrapper'
+  Decor[(Decor['Change'] = 5)] = 'Change'
+})(Decor || (Decor = {}))
+const decorModuleMap = new Map()
 function clearDecorators() {
-    utils_1.clearObject(delay);
+  utils_1.clearObject(delay)
 }
-exports.clearDecorators = clearDecorators;
-const upGet = (o, key) => {
-    let v = o[key];
-    if (!v)
-        v = o[key] = {};
-    return v;
-};
-const addMetaMap = (mutator, module, key, fx) => {
-    upGet(upGet(decorModuleMap, module), key)[mutator] = fx;
-};
-function getter(f) {
-    return (target, propertyKey) => {
-        addMetaMap(Decor.Getter, target.constructor.name, propertyKey, f);
-    };
+exports.clearDecorators = clearDecorators
+const updateFlowDecor = (df, decor, fx) => {
+  if (!df) df = {}
+  df[decor] = fx ? fx : true
+  return df
 }
-exports.getter = getter;
-function wrapper(f) {
-    return (target, propertyKey) => {
-        addMetaMap(Decor.Wrapper, target.constructor.name, propertyKey, f);
-    };
+const addMeta = (decor, classCon, flowName, fx) => {
+  let decoratedFlows
+  if (decorModuleMap.has(classCon)) {
+    decoratedFlows = decorModuleMap.get(classCon)
+  } else {
+    decoratedFlows = {}
+  }
+  decoratedFlows[flowName] = updateFlowDecor(decoratedFlows[flowName], decor, fx)
+  decorModuleMap.set(classCon, decoratedFlows)
 }
-exports.wrapper = wrapper;
-function changeFx(f) {
-    return (target, propertyKey) => {
-        addMetaMap(Decor.Change, target.constructor.name, propertyKey, f);
-    };
+const decorFx = decor => f => (target, propertyKey) => {
+  addMeta(decor, target.constructor, propertyKey, f)
 }
-exports.changeFx = changeFx;
-function stored(target, propertyKey) {
-    addMetaMap(Decor.Stored, target.constructor.name, propertyKey, true);
+const decorBase = decor => (target, propertyKey) => {
+  addMeta(decor, target.constructor, propertyKey)
 }
-exports.stored = stored;
-function qubit(target, propertyKey) {
-    upGet(qubitFlowMap, target.constructor.name)[propertyKey] = true;
+exports.getter = decorFx(Decor.Getter)
+exports.lazyGetter = decorFx(Decor.LazyGetter)
+exports.wrapper = decorFx(Decor.Wrapper)
+exports.changeFx = decorFx(Decor.Change)
+exports.stored = decorBase(Decor.Stored)
+exports.qubit = decorBase(Decor.Alive)
+exports.holistic = decorBase(Decor.Alive)
+const delay = []
+const getDecors = classCon => (decorModuleMap.has(classCon) ? decorModuleMap.get(classCon) : {})
+const mergeKeys = (o1, o2) => Object.keys(o1).concat(Object.keys(o2).filter(k => !o1[k]))
+function diamondMoment(instance, moduleName) {
+  const classCon = instance.constructor
+  const decors = getDecors(classCon)
+  const module = { _: { moduleName, classCon } }
+  const arousal = []
+  mergeKeys(instance, decors).forEach(name => {
+    let initialValue = instance[name]
+    let flow = initialValue ? alak_1.default(initialValue) : alak_1.default()
+    flow.setName(name)
+    flow.setId(moduleName + '.' + name)
+    flow.addMeta(core_1.META_CLASS, classCon)
+    awakening(flow, decors[name])
+    module[name] = flow
+  })
+  function awakening(flow, decors) {
+    if (!decors) return
+    decors[Decor.Stored] && localstore_1.XStorage.bindFlow(flow)
+    let delayed = []
+    Object.keys(decors).forEach(decor => {
+      switch (decor) {
+        case Decor.Alive:
+          break
+        case Decor.Stored:
+          localstore_1.XStorage.bindFlow(flow)
+          break
+        default:
+          delayed.push([decor, decors[decor]])
+      }
+    })
+    arousal.push([flow, delayed])
+  }
+  const safeModule = new Proxy(module, debugHandlers_1.safeModulePathHandler)
+  return [safeModule, arousal]
 }
-exports.qubit = qubit;
-function holistic(target, propertyKey) {
-    upGet(holisticFlowMap, target.constructor.name)[propertyKey] = true;
+exports.diamondMoment = diamondMoment
+function wakeUp(arousal) {
+  arousal.forEach(([flow, delayed]) =>
+    delayed.forEach(([decor, fx]) => {
+      switch (decor) {
+        case Decor.Wrapper:
+          flow.useWrapper(decor)
+          break
+        case Decor.Getter:
+          flow.useGetter(decor)
+          flow()
+          break
+        case Decor.Change:
+          flow.up(decor)
+          break
+      }
+    }),
+  )
 }
-exports.holistic = holistic;
-function extra(target, propertyKey) {
-    // return {
-    //   xx :{
-    //     aa:'ok'
-    //   }
-    // }
-}
-exports.extra = extra;
-function holisticLive(module, className) {
-    let holisticFlow = holisticFlowMap[className];
-    let qubitFlow = qubitFlowMap[className];
-    let holistic = {};
-    if (qubitFlow)
-        Object.keys(qubitFlow).forEach(n => {
-            if (!utils_1.alive(module[n]))
-                module[n] = null;
-        });
-    if (holisticFlow)
-        Object.keys(holisticFlow).forEach(n => {
-            if (!utils_1.alive(module[n]))
-                module[n] = null;
-            holistic[n] = true;
-        });
-    return holistic;
-}
-exports.holisticLive = holisticLive;
-function applyDecors(flow, moduleName, flowName) {
-    let decorMap = decorModuleMap[moduleName];
-    if (decorMap) {
-        let decors = decorMap[flowName];
-        if (decors) {
-            warmUp(flow, decors);
-        }
-    }
-}
-exports.applyDecors = applyDecors;
-const delay = [];
-function warmUp(flow, decors) {
-    let delayed = {};
-    Object.keys(decors).forEach(v => {
-        let decor = decors[v];
-        switch (v) {
-            case Decor.Stored:
-                localstore_1.XStorage.bindFlow(flow);
-                break;
-            default:
-                delayed[v] = decor;
-        }
-    });
-    if (Object.keys(delayed).length) {
-        delay.push([flow, delayed]);
-    }
-}
-function wakeUp() {
-    delay.forEach(([flow, decors]) => {
-        Object.keys(decors).forEach(v => {
-            let decor = decors[v];
-            switch (v) {
-                case Decor.Wrapper:
-                    flow.useWrapper(decor);
-                    break;
-                case Decor.Getter:
-                    flow.useGetter(decor);
-                    flow();
-                    break;
-                case Decor.Change:
-                    flow.up(decor);
-                    break;
-            }
-        });
-    });
-    delay.length = 0;
-}
-exports.wakeUp = wakeUp;
+exports.wakeUp = wakeUp

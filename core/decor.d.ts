@@ -1,11 +1,10 @@
-export declare function clearDecorators(): void;
-export declare function getter(f: Function): PropertyDecorator;
-export declare function wrapper(f: Function): PropertyDecorator;
-export declare function changeFx(f: Function): PropertyDecorator;
-export declare function stored(target: Object, propertyKey: string | symbol): void;
-export declare function qubit(target: Object, propertyKey: string | symbol): void;
-export declare function holistic(target: Object, propertyKey: string | symbol): void;
-export declare function extra(target: Object, propertyKey: string | symbol): void;
-export declare function holisticLive(module: any, className: any): {};
-export declare function applyDecors(flow: any, moduleName: any, flowName: any): void;
-export declare function wakeUp(): void;
+export declare function clearDecorators(): void
+export declare const getter: (f: Function) => PropertyDecorator
+export declare const lazyGetter: (f: Function) => PropertyDecorator
+export declare const wrapper: (f: Function) => PropertyDecorator
+export declare const changeFx: (f: Function) => PropertyDecorator
+export declare const stored: (target: Object, propertyKey: string | symbol) => void
+export declare const qubit: (target: Object, propertyKey: string | symbol) => void
+export declare const holistic: (target: Object, propertyKey: string | symbol) => void
+export declare function diamondMoment(instance: any, moduleName: any): any[]
+export declare function wakeUp(arousal: any): void

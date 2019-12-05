@@ -1,23 +1,22 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+'use strict'
+Object.defineProperty(exports, '__esModule', { value: true })
+exports.stateModuleProxy = module =>
+  new Proxy(module, {
+    get(o, key) {
+      let v = o[key]
+      if (v) return v.value
+      else throw 'empty flow ' + key.toString() + ' for pure state getter'
+    },
+  })
 exports.stateProxyHandler = () => {
-    const cached = {};
-    const flowHandler = {
-        get(o, key) {
-            if (o[key])
-                return o[key].value;
-            else
-                throw "empty flow " + key + " for pure state getter";
-        },
-    };
-    return {
-        get(o, key) {
-            if (cached[key]) {
-                return cached[key];
-            }
-            else {
-                return (cached[key] = new Proxy(o[key], flowHandler));
-            }
-        },
-    };
-};
+  const cached = {}
+  return {
+    get(o, key) {
+      if (cached[key]) {
+        return cached[key]
+      } else {
+        return (cached[key] = exports.stateModuleProxy(o[key]))
+      }
+    },
+  }
+}
