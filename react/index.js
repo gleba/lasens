@@ -1,6 +1,7 @@
 'use strict'
 Object.defineProperty(exports, '__esModule', { value: true })
 const react_1 = require('react')
+const utils_1 = require('../core/utils')
 function useFlow(flow) {
   const [state, mutate] = react_1.useState(flow.value)
   react_1.useEffect(() => {
@@ -30,7 +31,9 @@ function useComputeFlow(flow, computeFn) {
 exports.useComputeFlow = useComputeFlow
 function useFlowFx(flow, effectFn) {
   let lastValue = flow.value
-  const [state, mutate] = react_1.useState(flow.value)
+  const [state, mutate] = utils_1.alive(lastValue)
+    ? react_1.useState(lastValue)
+    : react_1.useState()
   let mutateFx = v => {
     if (lastValue !== v) {
       lastValue = v
@@ -46,7 +49,9 @@ function useFlowFx(flow, effectFn) {
 }
 exports.useFlowFx = useFlowFx
 function useASyncFlow(flow, mixin) {
-  const [state, mutate] = react_1.useState(flow.value)
+  const [state, mutate] = utils_1.alive(flow.value)
+    ? react_1.useState(flow.value)
+    : react_1.useState()
   let busy
   if (flow.isAsync) {
     const [now, change] = react_1.useState(false)
@@ -79,7 +84,9 @@ const asEventHandler = (e, value) => {
 }
 function useInputFlow(flow, effectFn) {
   let lastValue = flow.value
-  const [state, mutate] = react_1.useState(flow.value)
+  const [state, mutate] = utils_1.alive(lastValue)
+    ? react_1.useState(lastValue)
+    : react_1.useState()
   const mutateFx = v => {
     if (lastValue !== v) {
       if (flow.value != v) flow(v)

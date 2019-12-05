@@ -65,7 +65,7 @@ export function diamondMoment(instance, moduleName) {
 
   mergeKeys(instance, decors).forEach(name => {
     let initialValue = instance[name]
-    let flow = initialValue ? A(initialValue) : A()
+    let flow = alive(initialValue) ? A(initialValue) : A()
     flow.setName(name)
     flow.setId(moduleName + '.' + name)
     flow.addMeta(META_CLASS, classCon)

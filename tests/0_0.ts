@@ -4,13 +4,14 @@ import { getter } from '../src/core/decor'
 
 const xxx = () => 'hello'
 export class BaseModule {
-  @qubit @getter(xxx) word: string
+  @getter(xxx) word: string
+  name = ''
 
   actions({ f, q }: La<BaseModule>) {
     return {
       say() {
-        f.word()
-        console.log('→D', f.word.value)
+        // f.word()
+        // console.log('→D', f.word.value)
       },
     }
   }
@@ -25,6 +26,7 @@ test('init store', async ({ ok, end, fall, plan }) => {
   let store = LaSens(modules)
   store.renew()
   store.actions.base.say()
-  // ok(store.state.base.word == 'hello', 'word is hello')
+  console.log(store.state.base.name)
+  ok(store.state.base.name == '', 'name is clear')
   end()
 })
