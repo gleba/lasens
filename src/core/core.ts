@@ -133,14 +133,11 @@ export function LaSens<T>(modules: T): ISens<T> {
     console.log('✓ awake module :', modulePath)
 
     if (instance.actions) {
-      let thingsInContext = makeSenseFor([instance.constructor, modulePath, ...DEBUG_MODULE])
-      let f = thingsInContext.flows[modulePath]
+      let context = makeSenseFor([instance.constructor, modulePath, ...DEBUG_MODULE])
+      let f = context.flows[modulePath]
       let q = state[modulePath]
-      instance.actions.bind(thingsInContext)
-      awakedActions[modulePath] = instance.actions.apply(thingsInContext, [
-        Object.assign({ f, q }, thingsInContext),
-        thingsInContext,
-      ])
+      context = Object.assign(context, { f, q })
+      awakedActions[modulePath] = instance.actions.apply(context, [context, context])
     }
     return false
   }

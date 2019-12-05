@@ -8,9 +8,7 @@ import { stateModuleProxy } from './stateProxyHandler'
 
 type StateModule<T> = Omit<T, 'actions'>
 type FlowModule<T> = { readonly [K in keyof T]: AFlow<T[K]> }
-declare type QuickModule<T> = {
-  readonly [K in keyof T]: T[K]
-}
+declare type QuickModule<T> = { readonly [K in keyof T]: T[K] }
 
 export interface La<T> {
   f: FlowModule<StateModule<T>>
@@ -36,45 +34,11 @@ export interface IDynamique<U, T> extends ISens<U> {
 }
 
 export function Dynamique<U, T>(store: ISens<U>, modules: T): IDynamique<U, T> {
-  function create(moduleClass, id, argument) {
-    const instance = new moduleClass()
-    const [safeModule, arousal] = diamondMoment(moduleClass, id)
-    wakeUp(arousal)
-
-    let actions
-    if (instance.actions) {
-      let ctxPath = [id, instance.constructor.name, ...DEBUG_DYN_MODULE]
-      let ctxedThinx = store.newContext(ctxPath)
-      let f
-      if (A.canLog) {
-        let p = new Proxy({ x: module }, proxyLoggerFlow(ctxPath))
-        f = p.x
-      } else {
-        f = module
-      }
-      let context = Object.assign({ id }, ctxedThinx)
-      instance.actions.bind(context)
-
-      // let q = stateModuleProxy(safeModule)
-      actions = instance.actions(Object.assign({ f }, context))
-      actions.id = id
-      if (actions.new) {
-        actions.new(argument)
-      }
-    }
-    return false
-    return {
-      flows: module,
-      actions,
-    }
-  }
-
   const satMap = (store['satelliteMap'] = new Map())
 
   function moduleOperations(moduleClass) {
-    let instancesMap = satMap.has(moduleClass) ? satMap.get(moduleClass) : new Map()
-
-    function createFrom(argument) {
+    const instancesMap = satMap.has(moduleClass) ? satMap.get(moduleClass) : new Map()
+    function create(argument) {
       let id
       let uid = Math.random()
       if (argument) {
@@ -92,10 +56,36 @@ export function Dynamique<U, T>(store: ISens<U>, modules: T): IDynamique<U, T> {
       if (!id) id = uid
       if (instancesMap.has(id)) return instancesMap.get(id)
 
-      const module = create(moduleClass, id, argument)
-      instancesMap.set(id, module)
+      const instance = new moduleClass()
+      const [safeModule, arousal] = diamondMoment(instance, id)
+      wakeUp(arousal)
+
+      let actions
+      if (instance.actions) {
+        let contextDebug = [id, instance.constructor.name, ...DEBUG_DYN_MODULE]
+        let context = store.newContext(contextDebug)
+        let f
+        if (A.canLog) {
+          let p = new Proxy({ x: safeModule }, proxyLoggerFlow(contextDebug))
+          f = p.x
+        } else {
+          f = safeModule
+        }
+        let q = stateModuleProxy(safeModule)
+        context = Object.assign({ f, q, id }, context)
+        actions = instance.actions.apply(context, [context, context])
+        actions.id = id
+        if (actions.new) {
+          actions.new(argument)
+        }
+      }
+      return {
+        flows: safeModule,
+        actions,
+      }
+      instancesMap.set(id, safeModule)
       satMap.set(moduleClass, instancesMap)
-      module['id'] = id
+      safeModule['id'] = id
       return module
     }
 
@@ -103,9 +93,9 @@ export function Dynamique<U, T>(store: ISens<U>, modules: T): IDynamique<U, T> {
       get({ way }, key) {
         return (...args) =>
           instancesMap.forEach(m => {
-            let flowWay = m[way]
-            if (flowWay) {
-              let flowKey = flowWay[key]
+            let castWay = m[way]
+            if (castWay) {
+              let flowKey = castWay[key]
               if (flowKey) {
                 return flowKey(...args)
               }
@@ -113,12 +103,12 @@ export function Dynamique<U, T>(store: ISens<U>, modules: T): IDynamique<U, T> {
           })
       },
     }
-    return Object.assign(createFrom, {
+    return Object.assign(create, {
       broadcast: {
         flows: new Proxy({ way: 'flows' }, broadcastHandler),
         actions: new Proxy({ way: 'actions' }, broadcastHandler),
       },
-      create: createFrom,
+      create,
       getById: id => (instancesMap.has(id) ? instancesMap.get(id) : undefined),
       removeById: id => (instancesMap.has(id) ? instancesMap.delete(id) : undefined),
     })

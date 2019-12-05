@@ -62,6 +62,7 @@ export function diamondMoment(instance, moduleName) {
   const decors = getDecors(classCon)
   const module = { _: { moduleName, classCon } }
   const arousal = []
+
   mergeKeys(instance, decors).forEach(name => {
     let initialValue = instance[name]
     let flow = initialValue ? A(initialValue) : A()
