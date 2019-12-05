@@ -1,4 +1,4 @@
-import {A} from "alak";
+import { A } from 'alak'
 
 export const safeModulePathHandler = <ProxyHandler<any>>{
   set(o, key, value) {
@@ -8,26 +8,26 @@ export const safeModulePathHandler = <ProxyHandler<any>>{
   get(o: any, key: string) {
     let v = o[key]
     if (!v) {
-      if (key == "toJSON"){
+      if (key == 'toJSON') {
         return {
-          path:o._.moduleName,
-          class:o._.className,
-          flows:Object.keys(o)
+          path: o._.moduleName,
+          class: o._.className,
+          flows: Object.keys(o),
         }
       } else {
         console.log(`× Not initialised flow: ${o._.moduleName}.${key}`)
         console.warn(
-          `Use @qubit directive and processing null exception, or define value '${key}' in '${
-            o._.className
-          }'`,
+          `Use @qubit directive and processing null exception, or define value '${key}' in '${o._.className}'`,
         )
         console.log(`GRAPH_SCHEMA_ERROR • ${o._.moduleName}.${key}`)
-        return alwaysErrorProxy(JSON.stringify({
-          error:`× Not initialised flow: ${o._.moduleName}.${key}`,
-          path:o._.moduleName,
-          class:o._.className,
-          flows:Object.keys(o)
-        }))
+        return alwaysErrorProxy(
+          JSON.stringify({
+            error: `× Not initialised flow: ${o._.moduleName}.${key}`,
+            path: o._.moduleName,
+            class: o._.className,
+            flows: Object.keys(o),
+          }),
+        )
       }
     }
     return v
@@ -56,9 +56,14 @@ export function proxyLoggerAction(context) {
   })
   return {
     get(o, key) {
-
       let way = wrappedMap[key]
       if (!way) {
+        let flow = o[key]
+        if (!flow) {
+          let message = `† rest in peace context: ${context.toString()} . '${key}' module not found `
+          console.warn(message)
+          throw message
+        }
         way = wrappedMap[key] = new Proxy(o[key], wrapper(key))
       }
       return way
@@ -66,11 +71,11 @@ export function proxyLoggerAction(context) {
   }
 }
 
-const labelString = "∴ is lasens flow proxy ✓ in debug mode"
+const labelString = '∴ is lasens flow proxy ✓ in debug mode'
 export const makeMessageObj = message => ({
   toString: () => message,
   [Symbol.toStringTag]: () => message,
-  [Symbol.toPrimitive]: () => message
+  [Symbol.toPrimitive]: () => message,
 })
 export const alwaysErrorProxy = message => {
   return new Proxy(makeMessageObj(message), {
@@ -81,13 +86,13 @@ export const alwaysErrorProxy = message => {
       } else {
         return alwaysErrorProxy(message)
       }
-    }
+    },
   })
 }
 
 export function proxyLoggerFlow(context) {
   const wrappedMap = {
-    ...makeMessageObj(labelString)
+    ...makeMessageObj(labelString),
   }
   const flowWrapper = {
     apply(o, thisArg, argumentsList) {
@@ -119,12 +124,11 @@ export function proxyLoggerFlow(context) {
         return alwaysErrorProxy(originalModule)
       }
       return wrappedModule
-    }
+    },
   }
 }
 
 export function proxyLoggerDynamique(context) {
-
   const logCreateModule = (o, a) => {
     let m = o(...a)
     A.log({
@@ -142,22 +146,28 @@ export function proxyLoggerDynamique(context) {
     },
     get(o, key) {
       switch (key) {
-        case "create":
+        case 'create':
           return (...a) => logCreateModule(o, a)
-        case "broadcast":
+        case 'broadcast':
           let m = ways[key]
           if (!m) {
             let x = o[key]
-            const {flows} = new Proxy({flows: x.flows}, proxyLoggerFlow(["broadcast", ...context]))
-            const {actions} = new Proxy({actions: x.actions}, proxyLoggerAction(["broadcast", ...context]))
+            const { flows } = new Proxy(
+              { flows: x.flows },
+              proxyLoggerFlow(['broadcast', ...context]),
+            )
+            const { actions } = new Proxy(
+              { actions: x.actions },
+              proxyLoggerAction(['broadcast', ...context]),
+            )
             m = ways[key] = {
               flows,
-              actions
+              actions,
             }
           }
           return m
-        case "removeById":
-          return (uid) => {
+        case 'removeById':
+          return uid => {
             A.log({
               type: RemoveType,
               context,
@@ -167,15 +177,14 @@ export function proxyLoggerDynamique(context) {
           }
       }
       return o[key]
-    }
+    },
   }
   const cachedModules = {}
   return {
     get(o, key) {
       let m = cachedModules[key]
-      if (!m)
-        m = cachedModules[key] = new Proxy(o[key], moduleHandler)
+      if (!m) m = cachedModules[key] = new Proxy(o[key], moduleHandler)
       return m
-    }
+    },
   }
 }

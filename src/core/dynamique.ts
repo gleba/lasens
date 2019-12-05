@@ -1,8 +1,10 @@
-import { FromClass, ISens, LaAction, META_CLASSNAME, META_HOLISTIC } from './core'
+import { FromClass, ISens, LaAction } from './core'
 import { A, AFlow } from 'alak'
-import { applyDecors, holisticLive, wakeUp } from './decor'
-import { alive, DEBUG_DYN_MODULE, DEBUG_FACADE, DEBUG_INIT_FLOW } from './utils'
-import { proxyLoggerDynamique, proxyLoggerFlow, safeModulePathHandler } from './debugHandlers'
+
+import { DEBUG_DYN_MODULE, DEBUG_FACADE, primitiveExceptions } from './utils'
+import { alwaysErrorProxy, proxyLoggerDynamique, proxyLoggerFlow } from './debugHandlers'
+import { diamondMoment, wakeUp } from './decor'
+import { stateModuleProxy } from './stateProxyHandler'
 
 type StateModule<T> = Omit<T, 'actions'>
 type FlowModule<T> = { readonly [K in keyof T]: AFlow<T[K]> }
@@ -35,30 +37,13 @@ export interface IDynamique<U, T> extends ISens<U> {
 
 export function Dynamique<U, T>(store: ISens<U>, modules: T): IDynamique<U, T> {
   function create(moduleClass, id, argument) {
-    let instance = new moduleClass()
-    let className = instance.constructor.name
-    let holistic = holisticLive(instance, className)
-    let module = new Proxy({ _: { moduleName: instance, className } }, safeModulePathHandler)
-    Object.keys(instance).forEach(flowName => {
-      let flow = A.flow()
-      let initialFlowStateValue = instance[flowName]
-      let isHolistic = holistic[flowName]
-      let isAliveValue = alive(initialFlowStateValue)
-      if (isHolistic) {
-        flow.addMeta(META_HOLISTIC, initialFlowStateValue)
-      }
-      flow.setId(className + '.' + id + '.' + flowName)
-      flow.addMeta(META_CLASSNAME, className)
-      if (isAliveValue && !isHolistic) {
-        flow(initialFlowStateValue, DEBUG_INIT_FLOW)
-      }
-      applyDecors(flow, className, flowName)
-      module[flowName] = flow
-    })
-    wakeUp()
+    const instance = new moduleClass()
+    const [safeModule, arousal] = diamondMoment(moduleClass, id)
+    wakeUp(arousal)
+
     let actions
     if (instance.actions) {
-      let ctxPath = [id, className, ...DEBUG_DYN_MODULE]
+      let ctxPath = [id, instance.constructor.name, ...DEBUG_DYN_MODULE]
       let ctxedThinx = store.newContext(ctxPath)
       let f
       if (A.canLog) {
@@ -69,12 +54,15 @@ export function Dynamique<U, T>(store: ISens<U>, modules: T): IDynamique<U, T> {
       }
       let context = Object.assign({ id }, ctxedThinx)
       instance.actions.bind(context)
+
+      // let q = stateModuleProxy(safeModule)
       actions = instance.actions(Object.assign({ f }, context))
       actions.id = id
       if (actions.new) {
         actions.new(argument)
       }
     }
+    return false
     return {
       flows: module,
       actions,
@@ -115,11 +103,11 @@ export function Dynamique<U, T>(store: ISens<U>, modules: T): IDynamique<U, T> {
       get({ way }, key) {
         return (...args) =>
           instancesMap.forEach(m => {
-            let fway = m[way]
-            if (fway) {
-              let fkey = fway[key]
-              if (fkey) {
-                return fkey(...args)
+            let flowWay = m[way]
+            if (flowWay) {
+              let flowKey = flowWay[key]
+              if (flowKey) {
+                return flowKey(...args)
               }
             }
           })

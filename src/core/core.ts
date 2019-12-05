@@ -1,7 +1,7 @@
 import { AFlow } from 'alak'
 import A from 'alak'
 
-import { applyDecors, holisticLive, wakeUp } from './decor'
+import { diamondMoment, wakeUp } from './decor'
 import {
   alive,
   clearObject,
@@ -52,8 +52,9 @@ export type LaSensType<T> = {
   state: StateModules<T>
 }
 
-export const META_HOLISTIC = 'holistic'
-export const META_CLASSNAME = 'classname'
+// export const META_HOLISTIC = 'holistic'
+// export const META_CLASSNAME = 'classname'
+export const META_CLASS = 'class'
 
 export interface ISens<T> {
   actions: ActionModules<T>
@@ -63,7 +64,6 @@ export interface ISens<T> {
 
   newContext(context: any): LaSensType<T>
 }
-
 export function LaSens<T>(modules: T): ISens<T> {
   const availableModules = () => 'available modules: ' + Object.keys(sleepingModules).toString()
   const sleepingModules = {} as any
@@ -76,7 +76,7 @@ export function LaSens<T>(modules: T): ISens<T> {
     get(o, key) {
       let m = o[key]
       if (!m) {
-        let reasonToSleep = awakeModule(key)
+        let reasonToSleep = wakeUpModule(key)
         if (!reasonToSleep) {
           m = o[key]
         } else if (primitiveExceptions[key]) {
@@ -114,7 +114,7 @@ export function LaSens<T>(modules: T): ISens<T> {
   }
 
   // const state = new Proxy(awakedActions, graphProxyHandler) as ActionModules<T>
-  function awakeModule(modulePath) {
+  function wakeUpModule(modulePath) {
     if (primitiveExceptions[modulePath]) {
       return alwaysErrorProxy(availableModules())
     }
@@ -123,41 +123,21 @@ export function LaSens<T>(modules: T): ISens<T> {
       console.error('Module by path name: [', modulePath, '] is not found')
       let availableModulesMessage = availableModules()
       console.warn(availableModulesMessage)
-
       return alwaysErrorProxy(availableModulesMessage)
     }
-    console.log('✓ awake module :', modulePath)
-    let awakened = new sleepingModule()
-    let className = awakened.constructor.name
-    let holistic = holisticLive(awakened, className)
-    let module = new Proxy({ _: { moduleName: modulePath, className } }, safeModulePathHandler)
-    Object.keys(awakened).forEach(flowName => {
-      let flow = A()
-      let initialFlowStateValue = awakened[flowName]
-      let isHolistic = holistic[flowName]
-      let isAliveValue = alive(initialFlowStateValue)
-      if (isHolistic) {
-        flow.addMeta(META_HOLISTIC, initialFlowStateValue)
-      }
-      flow.setName(flowName)
-      flow.setId(modulePath + '.' + flowName)
-      flow.addMeta(META_CLASSNAME, className)
-      if (isAliveValue && !isHolistic) {
-        flow(initialFlowStateValue, DEBUG_INIT_FLOW)
-      }
-      applyDecors(flow, className, flowName)
-      module[flowName] = flow
-      flowMap[flow.id] = flow
-    })
-    awakedFlow[modulePath] = module
+    const instance = new sleepingModule()
+    const [safeModule, arousal] = diamondMoment(instance, modulePath)
+    awakedFlow[modulePath] = safeModule
+    wakeUp(arousal)
 
-    wakeUp()
-    if (awakened.actions) {
-      let thingsInContext = makeSenseFor([className, modulePath, ...DEBUG_MODULE])
+    console.log('✓ awake module :', modulePath)
+
+    if (instance.actions) {
+      let thingsInContext = makeSenseFor([instance.constructor, modulePath, ...DEBUG_MODULE])
       let f = thingsInContext.flows[modulePath]
       let q = state[modulePath]
-      awakened.actions.bind(thingsInContext)
-      awakedActions[modulePath] = awakened.actions.apply(thingsInContext, [
+      instance.actions.bind(thingsInContext)
+      awakedActions[modulePath] = instance.actions.apply(thingsInContext, [
         Object.assign({ f, q }, thingsInContext),
         thingsInContext,
       ])

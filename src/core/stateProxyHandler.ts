@@ -1,17 +1,20 @@
+export const stateModuleProxy = module =>
+  new Proxy(module, {
+    get(o, key) {
+      let v = o[key]
+      if (v) return v.value
+      else throw 'empty flow ' + key.toString() + ' for pure state getter'
+    },
+  })
+
 export const stateProxyHandler = () => {
   const cached = {}
-  const flowHandler = {
-    get(o, key) {
-      if (o[key]) return o[key].value
-      else throw "empty flow " + key + " for pure state getter"
-    },
-  }
   return {
     get(o, key) {
       if (cached[key]) {
         return cached[key]
       } else {
-        return (cached[key] = new Proxy(o[key], flowHandler))
+        return (cached[key] = stateModuleProxy(o[key]))
       }
     },
   }

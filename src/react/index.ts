@@ -69,6 +69,7 @@ export function useASyncFlow<T, U>(flow: AFlow<T>, mixin?: (v: T) => U): [U, Boo
 }
 
 const asEventHandler = (e, value) => {
+  // const [e, value] = a
   if (value != undefined) return value
   if (e.target) {
     if ('value' in e.target) return e.target.value
@@ -88,6 +89,7 @@ export function useInputFlow<T>(flow: AFlow<T>, effectFn?: (v: T) => void): [T, 
       mutate(v)
     }
   }
+  // @ts-ignore
   const eventHandler = (...a) => mutateFx(asEventHandler(...a))
   useEffect(() => {
     flow.up(mutateFx)
