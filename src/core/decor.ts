@@ -5,12 +5,12 @@ import A from 'alak'
 import { META_CLASS } from './core'
 
 enum Decor {
-  Alive,
-  Stored,
-  LazyGetter,
-  Getter,
-  Wrapper,
-  Change,
+  Alive = 'Alive',
+  Stored = 'Stored',
+  LazyGetter = 'LazyGetter',
+  Getter = 'LazyGetter',
+  Wrapper = 'Wrapper',
+  Change = 'Change',
 }
 const decorModuleMap = new Map()
 

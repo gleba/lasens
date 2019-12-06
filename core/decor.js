@@ -57,7 +57,7 @@ function diamondMoment(instance, moduleName) {
   const arousal = []
   mergeKeys(instance, decors).forEach(name => {
     let initialValue = instance[name]
-    let flow = initialValue ? alak_1.default(initialValue) : alak_1.default()
+    let flow = utils_1.alive(initialValue) ? alak_1.default(initialValue) : alak_1.default()
     flow.setName(name)
     flow.setId(moduleName + '.' + name)
     flow.addMeta(core_1.META_CLASS, classCon)
