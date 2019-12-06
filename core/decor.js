@@ -7,12 +7,12 @@ const alak_1 = require('alak')
 const core_1 = require('./core')
 var Decor
 ;(function(Decor) {
-  Decor[(Decor['Alive'] = 0)] = 'Alive'
-  Decor[(Decor['Stored'] = 1)] = 'Stored'
-  Decor[(Decor['LazyGetter'] = 2)] = 'LazyGetter'
-  Decor[(Decor['Getter'] = 3)] = 'Getter'
-  Decor[(Decor['Wrapper'] = 4)] = 'Wrapper'
-  Decor[(Decor['Change'] = 5)] = 'Change'
+  Decor['Alive'] = 'Alive'
+  Decor['Stored'] = 'Stored'
+  Decor['LazyGetter'] = 'LazyGetter'
+  Decor['Getter'] = 'LazyGetter'
+  Decor['Wrapper'] = 'Wrapper'
+  Decor['Change'] = 'Change'
 })(Decor || (Decor = {}))
 const decorModuleMap = new Map()
 function clearDecorators() {

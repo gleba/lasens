@@ -5,12 +5,12 @@ import A from 'alak'
 import { META_CLASS } from './core'
 
 enum Decor {
-  Alive = 'Alive',
-  Stored = 'Stored',
-  LazyGetter = 'LazyGetter',
-  Getter = 'LazyGetter',
-  Wrapper = 'Wrapper',
-  Change = 'Change',
+  Alive = 'alive',
+  Stored = 'stored',
+  Getter = 'getter',
+  LazyGetter = 'lazyGetter',
+  Wrapper = 'wrapper',
+  Change = 'change',
 }
 const decorModuleMap = new Map()
 
@@ -99,11 +99,14 @@ export function wakeUp(arousal) {
     delayed.forEach(([decor, fx]) => {
       switch (decor) {
         case Decor.Wrapper:
-          flow.useWrapper(decor)
+          flow.useWrapper(fx)
           break
         case Decor.Getter:
-          flow.useGetter(decor)
+          flow.useGetter(fx)
           flow()
+          break
+        case Decor.LazyGetter:
+          flow.useGetter(fx)
           break
         case Decor.Change:
           flow.up(decor)

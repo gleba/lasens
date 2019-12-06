@@ -2,16 +2,16 @@ import { test } from './ouput.shema'
 import { ISens, La, LaSens, qubit } from '../src/core'
 import { getter } from '../src/core/decor'
 
-const xxx = () => 'hello'
+const getHello = () => 'hello'
 export class BaseModule {
-  @getter(xxx) word: string
+  @getter(getHello) word: string
   name = ''
 
   actions({ f, q }: La<BaseModule>) {
     return {
       say() {
         // f.word()
-        // console.log('→D', f.word.value)
+        console.log(':D', f.word.value)
       },
     }
   }
