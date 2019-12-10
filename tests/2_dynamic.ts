@@ -2,34 +2,37 @@ import { test } from './ouput.shema'
 
 import { Dynamique, IDynamique, La, LaSens, qubit } from '../src/core'
 import { ISens } from '../src/core'
+import { Do } from '../src/core/dynamique'
 
 class BaseModule {
-  @qubit userId: number
-  a1 = 'wait'
+  @qubit userId: string
+  world = 'hello'
 
-  actions({ f, actions, dynamique }: La<BaseModule> & XStore) {
+  actions({ f, actions, flows, dynamique }: Do<BaseModule, XStore>) {
     // const f = flows.base
-    // console.log({dynamique}, dynamique.BaseModule.removeById)
+    // console.log(Object.keys(a))
     // f.a1("?")
+    // console.log("actions call ←←")
 
-    f.userId.up(v => {
-      actions.base.hello(v)
-      dynamique.BaseModule.broadcast.actions.hello(v)
+    f.userId.up(id => {
+      // actions.base.hello(id)
+      // console.log("userId is", )
+      // actions.base.hello(v)
+      dynamique.BaseModule.broadcast.actions.hello(id)
     })
+
     let id
-    // console.log(f.a1)
 
     return {
       new(target) {
-        id = target
-        console.log(this.id)
+        id = this.id
+        f.userId('user_' + this.generateUserId() + '_' + this.id)
       },
-      hello(who) {
-        console.log(who, id)
-        f.userId(1)
+      hello(word) {
+        console.log('hello from', word, 'to', id)
       },
       generateUserId() {
-        f.userId(Math.floor(Math.random() * 999999 + 100))
+        return Math.floor(Math.random() * 999999 + 100)
       },
     }
   }
@@ -46,11 +49,25 @@ export type XStore = IDynamique<typeof modules, typeof dynModules>
 test('Dynamique', async ({ ok, end, fall, plan }) => {
   let store = Dynamique(LaSens(modules), dynModules)
   store.renew()
-  let m1 = store.dynamique.BaseModule.create('m1')
-  let m2 = store.dynamique.BaseModule('m2')
-  let m3 = store.dynamique.BaseModule('m3')
 
-  store.dynamique.BaseModule.broadcast.actions.generateUserId()
+  // store.flows
+
+  // let m1 = store.dynamique.BaseModule.create('m1')
+  // let m2 = store.dynamique.BaseModule('m2')
+  // let m3 = store.dynamique.BaseModule('m3')
+
+  store.dynamique.BaseModule('m1')
+  store.dynamique.BaseModule('m2')
+  store.dynamique.BaseModule('m3')
+  store.dynamique.BaseModule('m4')
+  // // store.dynamique.BaseModule('m3').actions.hello("x")
+  store.dynamique.BaseModule('m5')
+  store.dynamique.BaseModule('m6')
+  store.dynamique.BaseModule('m7')
+
+  // console.log(store.state.base.world)
+
+  // store.dynamique.BaseModule.broadcast.actions.generateUserId()
 
   setTimeout(end, 250)
 })

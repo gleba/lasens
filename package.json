@@ -1,6 +1,6 @@
 {
   "name": "lasens",
-  "version": "0.0.46",
+  "version": "0.0.47",
   "description": "La Sens Store",
   "main": "core/index.js",
   "typings": "core/index.d.ts",
@@ -37,6 +37,6 @@
     }
   },
   "dependencies": {
-    "alak": "^1.0.28"
+    "alak": "^1.0.32"
   }
 }

@@ -7,12 +7,12 @@ const alak_1 = require('alak')
 const core_1 = require('./core')
 var Decor
 ;(function(Decor) {
-  Decor['Alive'] = 'Alive'
-  Decor['Stored'] = 'Stored'
-  Decor['LazyGetter'] = 'LazyGetter'
-  Decor['Getter'] = 'LazyGetter'
-  Decor['Wrapper'] = 'Wrapper'
-  Decor['Change'] = 'Change'
+  Decor['Alive'] = 'alive'
+  Decor['Stored'] = 'stored'
+  Decor['Getter'] = 'getter'
+  Decor['LazyGetter'] = 'lazyGetter'
+  Decor['Wrapper'] = 'wrapper'
+  Decor['Change'] = 'change'
 })(Decor || (Decor = {}))
 const decorModuleMap = new Map()
 function clearDecorators() {
@@ -90,11 +90,14 @@ function wakeUp(arousal) {
     delayed.forEach(([decor, fx]) => {
       switch (decor) {
         case Decor.Wrapper:
-          flow.useWrapper(decor)
+          flow.useWrapper(fx)
           break
         case Decor.Getter:
-          flow.useGetter(decor)
+          flow.useGetter(fx)
           flow()
+          break
+        case Decor.LazyGetter:
+          flow.useGetter(fx)
           break
         case Decor.Change:
           flow.up(decor)

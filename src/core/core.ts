@@ -18,38 +18,45 @@ import {
 } from './debugHandlers'
 import { stateProxyHandler } from './stateProxyHandler'
 
-export type LaAction<T> = T extends { actions: (...args: any) => any }
+export type ActionFnResult<T> = T extends { actions: (...args: any) => any }
   ? Omit<ReturnType<T['actions']>, 'new'>
   : any
 
 // export interface XModule<T> {
-//   actions(f:LaFlow<T>, a: LaAction<T>):any
+//   actions(f:LaFlow<T>, a: ActionFnResult<T>):any
 // }
 
-export type FromClass<T> = T extends new (...args: any) => any ? InstanceType<T> : never
-type ActionsModule<T> = LaAction<FromClass<T>>
-type StateClassModule<T> = Omit<FromClass<T>, 'actions'>
-export type StateModule<T> = Omit<T, 'actions'>
-type ActionModules<T> = { readonly [K in keyof T]: ActionsModule<T[K]> }
-export type StateModules<T> = { readonly [K in keyof T]: StateClassModule<T[K]> }
+export type ExtractClass<T> = T extends new (...args: any) => any ? InstanceType<T> : never
+type ActionKeysInClassFromObject<T> = ActionFnResult<ExtractClass<T>>
+type RemoveActionKey<T> = Omit<ExtractClass<T>, 'actions'>
+export type OnlyFlows<T> = Omit<T, 'actions'>
+export type ActionsFromClassKeysIn<T> = {
+  readonly [K in keyof T]: ActionKeysInClassFromObject<T[K]>
+}
+export type KeysInClassesFrom<T> = { readonly [K in keyof T]: RemoveActionKey<T[K]> }
 
-export type FlowModule<T> = { readonly [K in keyof T]: AFlow<T[K]> }
-// export type FlowModule<T> = { readonly [K in keyof T]: AFlow<T[K]> }
-export type FlowModules<T> = { readonly [K in keyof T]: FlowModule<T[K]> }
+export type FlowObject<T> = { readonly [K in keyof T]: AFlow<T[K]> }
+// export type FlowObject<T> = { readonly [K in keyof T]: AFlow<T[K]> }
+export type ClassKeysAsFlow<T> = { readonly [K in keyof T]: FlowObject<T[K]> }
 
 declare type QuickModule<T> = {
   readonly [K in keyof T]: T[K]
 }
+export type ActionsFromStore<T> = T extends { actions: any } ? T['actions'] : any
 
-export interface La<T> {
-  f: FlowModule<StateModule<T>>
-  q: QuickModule<StateModule<T>>
+export type FlowsFromStore<T> = T extends { flows: any } ? T['flows'] : any
+
+export interface La<T, S> {
+  f: FlowObject<OnlyFlows<T>>
+  q: QuickModule<OnlyFlows<T>>
+  actions: ActionsFromStore<S>
+  flows: FlowsFromStore<S>
 }
 
-export type LaSensType<T> = {
-  actions: ActionModules<T>
-  flows: FlowModules<StateModules<T>>
-  state: StateModules<T>
+export interface LaSensType<T> {
+  actions: ActionsFromClassKeysIn<T>
+  flows: ClassKeysAsFlow<KeysInClassesFrom<T>>
+  state: KeysInClassesFrom<T>
 }
 
 // export const META_HOLISTIC = 'holistic'
@@ -57,11 +64,10 @@ export type LaSensType<T> = {
 export const META_CLASS = 'class'
 
 export interface ISens<T> {
-  actions: ActionModules<T>
-  flows: FlowModules<StateModules<T>>
-  state: StateModules<T>
+  actions: ActionsFromClassKeysIn<T>
+  flows: ClassKeysAsFlow<KeysInClassesFrom<T>>
+  state: KeysInClassesFrom<T>
   renew()
-
   newContext(context: any): LaSensType<T>
 }
 export function LaSens<T>(modules: T): ISens<T> {
@@ -91,18 +97,18 @@ export function LaSens<T>(modules: T): ISens<T> {
     },
   }
 
-  const flows = new Proxy(awakedFlow, graphProxyHandler) as FlowModules<StateModules<T>>
-  const actions = new Proxy(awakedActions, graphProxyHandler) as ActionModules<T>
-  const state = new Proxy(flows, stateProxyHandler()) as ActionModules<T>
+  const flows = new Proxy(awakedFlow, graphProxyHandler) as ClassKeysAsFlow<KeysInClassesFrom<T>>
+  const actions = new Proxy(awakedActions, graphProxyHandler) as ActionsFromClassKeysIn<T>
+  const state = new Proxy(flows, stateProxyHandler())
   const things = {
     flows: [flows, proxyLoggerFlow],
     actions: [actions, proxyLoggerAction],
-    state,
+    state: [state],
   } as any
 
   function makeSenseFor(context) {
-    let result = { state } as any
-    ;['flows', 'actions'].forEach(k => {
+    let result = {} as any
+    Object.keys(things).forEach(k => {
       let [thing, proxyH] = things[k]
       if (A.canLog) {
         result[k] = new Proxy(thing, proxyH(context))
@@ -113,7 +119,7 @@ export function LaSens<T>(modules: T): ISens<T> {
     return result as LaSensType<T>
   }
 
-  // const state = new Proxy(awakedActions, graphProxyHandler) as ActionModules<T>
+  // const state = new Proxy(awakedActions, graphProxyHandler) as ActionsFromClassKeysIn<T>
   function wakeUpModule(modulePath) {
     if (primitiveExceptions[modulePath]) {
       return alwaysErrorProxy(availableModules())
@@ -134,8 +140,8 @@ export function LaSens<T>(modules: T): ISens<T> {
 
     if (instance.actions) {
       let context = makeSenseFor([instance.constructor, modulePath, ...DEBUG_MODULE])
-      let f = context.flows[modulePath]
-      let q = state[modulePath]
+      const f = context.flows[modulePath]
+      const q = context.state[modulePath]
       context = Object.assign(context, { f, q })
       awakedActions[modulePath] = instance.actions.apply(context, [context, context])
     }

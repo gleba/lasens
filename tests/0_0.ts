@@ -7,7 +7,7 @@ export class BaseModule {
   @getter(getHello) word: string
   name = ''
 
-  actions({ f, q }: La<BaseModule>) {
+  actions({ f, q }: La<BaseModule, XStore>) {
     return {
       say() {
         // f.word()

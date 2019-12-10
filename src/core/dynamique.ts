@@ -1,59 +1,90 @@
-import { FromClass, ISens, LaAction } from './core'
+import {
+  ActionFnResult,
+  ClassKeysAsFlow,
+  ExtractClass,
+  FlowObject,
+  ISens,
+  La,
+  LaSensType,
+} from './core'
 import { A, AFlow } from 'alak'
 
-import { DEBUG_DYN_MODULE, DEBUG_FACADE, primitiveExceptions } from './utils'
-import { alwaysErrorProxy, proxyLoggerDynamique, proxyLoggerFlow } from './debugHandlers'
+import { DEBUG_DYN_MODULE, DEBUG_FACADE } from './utils'
+import { proxyLoggerDynamique, proxyLoggerFlow } from './debugHandlers'
 import { diamondMoment, wakeUp } from './decor'
+
 import { stateModuleProxy } from './stateProxyHandler'
 
 type StateModule<T> = Omit<T, 'actions'>
 type FlowModule<T> = { readonly [K in keyof T]: AFlow<T[K]> }
-declare type QuickModule<T> = { readonly [K in keyof T]: T[K] }
 
-export interface La<T> {
-  f: FlowModule<StateModule<T>>
-  q: QuickModule<StateModule<T>>
+export type DynamiqueFromStore<T> = T extends { dynamique: any } ? T['dynamique'] : any
+
+export interface Do<T, S> extends La<T, S> {
+  id: string | number
+  target: any
+  free: void
+  dynamique: DynamiqueFromStore<S>
 }
+
+export type LaAction<T> = T extends { actions: (...args: any) => any }
+  ? Omit<ReturnType<T['actions']>, 'new'>
+  : any
 type DynamiqueModule<T> = {
-  actions: LaAction<T>
+  actions: ActionFnResult<T>
   flow: FlowModule<StateModule<T>>
 }
 
 type DynamiqueModules<T> = {
   [K in keyof T]: {
-    (target?: any): DynamiqueModule<FromClass<T[K]>>
-    broadcast: DynamiqueModule<FromClass<T[K]>>
-    create(o?: any): DynamiqueModule<FromClass<T[K]>>
-    getById(id: string | number): DynamiqueModule<FromClass<T[K]>>
+    (target?: any): DynamiqueModule<ExtractClass<T[K]>>
+    broadcast: DynamiqueModule<ExtractClass<T[K]>>
+    create(o?: any): DynamiqueModule<ExtractClass<T[K]>>
+    getById(id: string | number): DynamiqueModule<ExtractClass<T[K]>>
     removeById(id: string | number): void
   }
 }
+// export interface LaDynamiqueType<T> extends LaSensType<T> {
+//   free():void
+// }
+//
+// type DynamiqueModules<T> = {
+//   [K in keyof T]: {
+//     (target?: any): LaDynamiqueType<ExtractClass<T[K]>>
+//     broadcast: LaSensType<ExtractClass<T[K]>>
+//     create(o?: any): LaDynamiqueType<ExtractClass<T[K]>>
+//     getById(id: string | number): LaDynamiqueType<ExtractClass<T[K]>>
+//     removeById(id: string | number): void
+//   }
+// }
 
 export interface IDynamique<U, T> extends ISens<U> {
   dynamique: DynamiqueModules<T>
 }
 
 export function Dynamique<U, T>(store: ISens<U>, modules: T): IDynamique<U, T> {
-  const satMap = (store['satelliteMap'] = new Map())
+  const dynamiqueMap = new Map()
 
   function moduleOperations(moduleClass) {
-    const instancesMap = satMap.has(moduleClass) ? satMap.get(moduleClass) : new Map()
-    function create(argument) {
+    const instancesMap = dynamiqueMap.has(moduleClass) ? dynamiqueMap.get(moduleClass) : new Map()
+
+    function create(target) {
       let id
       let uid = Math.random()
-      if (argument) {
-        switch (typeof argument) {
+      if (target) {
+        switch (typeof target) {
           case 'string':
           case 'number':
           case 'symbol':
           case 'bigint':
-            id = argument
+            id = target
             break
           default:
-            if (argument.id) id = argument.id
+            if (target.id) id = target.id
         }
       }
       if (!id) id = uid
+
       if (instancesMap.has(id)) return instancesMap.get(id)
 
       const instance = new moduleClass()
@@ -71,22 +102,31 @@ export function Dynamique<U, T>(store: ISens<U>, modules: T): IDynamique<U, T> {
         } else {
           f = safeModule
         }
+
         let q = stateModuleProxy(safeModule)
-        context = Object.assign({ f, q, id }, context)
+
+        context = Object.assign({ f, q, id, target }, context)
+
         actions = instance.actions.apply(context, [context, context])
         actions.id = id
+        // actions = {id, ...actions}
+        // Object.keys(actions).forEach(f=>{
+        //   f!="id" && actions[f].bind(actions)
+        // })
         if (actions.new) {
-          actions.new(argument)
+          // actions.new(argument) //.apply(context, [argument])
+          actions.new.apply(actions, [target])
         }
       }
-      return {
+      const dynamiqueModule = {
         flows: safeModule,
         actions,
+        id,
+        free: () => instancesMap.delete(id),
       }
-      instancesMap.set(id, safeModule)
-      satMap.set(moduleClass, instancesMap)
-      safeModule['id'] = id
-      return module
+      instancesMap.set(id, dynamiqueModule)
+      dynamiqueMap.set(moduleClass, instancesMap)
+      return dynamiqueModule
     }
 
     const broadcastHandler = {
@@ -103,13 +143,15 @@ export function Dynamique<U, T>(store: ISens<U>, modules: T): IDynamique<U, T> {
           })
       },
     }
+    const getById = id => (instancesMap.has(id) ? instancesMap.get(id) : undefined)
+
     return Object.assign(create, {
       broadcast: {
         flows: new Proxy({ way: 'flows' }, broadcastHandler),
         actions: new Proxy({ way: 'actions' }, broadcastHandler),
       },
       create,
-      getById: id => (instancesMap.has(id) ? instancesMap.get(id) : undefined),
+      getById,
       removeById: id => (instancesMap.has(id) ? instancesMap.delete(id) : undefined),
     })
   }

@@ -6,7 +6,7 @@ import A from 'alak'
 require('./0_0')
 // require('./0_debug')
 // require('./1_base')
-// require('./2_dynamic')
+require('./2_dynamic')
 // require('./3_vue')
 // require('./4_trace')
 // require('./5_meta')
