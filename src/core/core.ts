@@ -45,12 +45,14 @@ declare type QuickModule<T> = {
 export type ActionsFromStore<T> = T extends { actions: any } ? T['actions'] : any
 
 export type FlowsFromStore<T> = T extends { flows: any } ? T['flows'] : any
+export type StateFromStore<T> = T extends { state: any } ? T['state'] : any
 
 export interface La<T, S> {
   f: FlowObject<OnlyFlows<T>>
   q: QuickModule<OnlyFlows<T>>
   actions: ActionsFromStore<S>
   flows: FlowsFromStore<S>
+  state: StateFromStore<T>
 }
 
 export interface LaSensType<T> {

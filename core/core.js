@@ -42,11 +42,11 @@ function LaSens(modules) {
   const things = {
     flows: [flows, debugHandlers_1.proxyLoggerFlow],
     actions: [actions, debugHandlers_1.proxyLoggerAction],
-    state,
+    state: [state],
   }
   function makeSenseFor(context) {
-    let result = { state }
-    ;['flows', 'actions'].forEach(k => {
+    let result = {}
+    Object.keys(things).forEach(k => {
       let [thing, proxyH] = things[k]
       if (alak_1.default.canLog) {
         result[k] = new Proxy(thing, proxyH(context))
@@ -56,7 +56,7 @@ function LaSens(modules) {
     })
     return result
   }
-  // const state = new Proxy(awakedActions, graphProxyHandler) as ActionModules<T>
+  // const state = new Proxy(awakedActions, graphProxyHandler) as ActionsFromClassKeysIn<T>
   function wakeUpModule(modulePath) {
     if (utils_1.primitiveExceptions[modulePath]) {
       return debugHandlers_1.alwaysErrorProxy(availableModules())
@@ -75,8 +75,8 @@ function LaSens(modules) {
     console.log('✓ awake module :', modulePath)
     if (instance.actions) {
       let context = makeSenseFor([instance.constructor, modulePath, ...utils_1.DEBUG_MODULE])
-      let f = context.flows[modulePath]
-      let q = state[modulePath]
+      const f = context.flows[modulePath]
+      const q = context.state[modulePath]
       context = Object.assign(context, { f, q })
       awakedActions[modulePath] = instance.actions.apply(context, [context, context])
     }

@@ -3,12 +3,13 @@ import { test } from './ouput.shema'
 import { Dynamique, IDynamique, La, LaSens, qubit } from '../src/core'
 import { ISens } from '../src/core'
 import { Do } from '../src/core/dynamique'
+import A from 'alak'
 
 class BaseModule {
   @qubit userId: string
   world = 'hello'
 
-  actions({ f, actions, flows, dynamique }: Do<BaseModule, XStore>) {
+  actions({ f, actions, flows, dynamique, free }: Do<BaseModule, XStore>) {
     // const f = flows.base
     // console.log(Object.keys(a))
     // f.a1("?")
@@ -23,10 +24,19 @@ class BaseModule {
 
     let id
 
+    setInterval(() => {
+      f.userId(Math.random() + 'x')
+    }, 100)
+
     return {
       new(target) {
         id = this.id
-        f.userId('user_' + this.generateUserId() + '_' + this.id)
+        // f.userId('user_' + this.generateUserId() + '_' + this.id)
+        f.world.from(flows.base.userId).quantum(x => {
+          console.log(id, x)
+          return x
+        })
+        setTimeout(() => free, 200)
       },
       hello(word) {
         console.log('hello from', word, 'to', id)
@@ -45,6 +55,8 @@ const modules = {
 const dynModules = { BaseModule }
 
 export type XStore = IDynamique<typeof modules, typeof dynModules>
+
+const x = A()
 
 test('Dynamique', async ({ ok, end, fall, plan }) => {
   let store = Dynamique(LaSens(modules), dynModules)

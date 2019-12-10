@@ -6,22 +6,22 @@ const debugHandlers_1 = require('./debugHandlers')
 const decor_1 = require('./decor')
 const stateProxyHandler_1 = require('./stateProxyHandler')
 function Dynamique(store, modules) {
-  const satMap = (store['satelliteMap'] = new Map())
+  const dynamiqueMap = new Map()
   function moduleOperations(moduleClass) {
-    const instancesMap = satMap.has(moduleClass) ? satMap.get(moduleClass) : new Map()
-    function create(argument) {
+    const instancesMap = dynamiqueMap.has(moduleClass) ? dynamiqueMap.get(moduleClass) : new Map()
+    function create(target) {
       let id
       let uid = Math.random()
-      if (argument) {
-        switch (typeof argument) {
+      if (target) {
+        switch (typeof target) {
           case 'string':
           case 'number':
           case 'symbol':
           case 'bigint':
-            id = argument
+            id = target
             break
           default:
-            if (argument.id) id = argument.id
+            if (target.id) id = target.id
         }
       }
       if (!id) id = uid
@@ -41,21 +41,27 @@ function Dynamique(store, modules) {
           f = safeModule
         }
         let q = stateProxyHandler_1.stateModuleProxy(safeModule)
-        context = Object.assign({ f, q, id }, context)
+        context = Object.assign({ f, q, id, target }, context)
         actions = instance.actions.apply(context, [context, context])
         actions.id = id
+        // actions = {id, ...actions}
+        // Object.keys(actions).forEach(f=>{
+        //   f!="id" && actions[f].bind(actions)
+        // })
         if (actions.new) {
-          actions.new(argument)
+          // actions.new(argument) //.apply(context, [argument])
+          actions.new.apply(actions, [target])
         }
       }
-      return {
+      const dynamiqueModule = {
         flows: safeModule,
         actions,
+        id,
+        free: () => instancesMap.delete(id),
       }
-      instancesMap.set(id, safeModule)
-      satMap.set(moduleClass, instancesMap)
-      safeModule['id'] = id
-      return module
+      instancesMap.set(id, dynamiqueModule)
+      dynamiqueMap.set(moduleClass, instancesMap)
+      return dynamiqueModule
     }
     const broadcastHandler = {
       get({ way }, key) {
@@ -71,13 +77,14 @@ function Dynamique(store, modules) {
           })
       },
     }
+    const getById = id => (instancesMap.has(id) ? instancesMap.get(id) : undefined)
     return Object.assign(create, {
       broadcast: {
         flows: new Proxy({ way: 'flows' }, broadcastHandler),
         actions: new Proxy({ way: 'actions' }, broadcastHandler),
       },
       create,
-      getById: id => (instancesMap.has(id) ? instancesMap.get(id) : undefined),
+      getById,
       removeById: id => (instancesMap.has(id) ? instancesMap.delete(id) : undefined),
     })
   }

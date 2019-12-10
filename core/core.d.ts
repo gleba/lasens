@@ -1,42 +1,54 @@
 import { AFlow } from 'alak'
-export declare type LaAction<T> = T extends {
+export declare type ActionFnResult<T> = T extends {
   actions: (...args: any) => any
 }
   ? Omit<ReturnType<T['actions']>, 'new'>
   : any
-export declare type FromClass<T> = T extends new (...args: any) => any ? InstanceType<T> : never
-declare type ActionsModule<T> = LaAction<FromClass<T>>
-declare type StateClassModule<T> = Omit<FromClass<T>, 'actions'>
-export declare type StateModule<T> = Omit<T, 'actions'>
-declare type ActionModules<T> = {
-  readonly [K in keyof T]: ActionsModule<T[K]>
+export declare type ExtractClass<T> = T extends new (...args: any) => any ? InstanceType<T> : never
+declare type ActionKeysInClassFromObject<T> = ActionFnResult<ExtractClass<T>>
+declare type RemoveActionKey<T> = Omit<ExtractClass<T>, 'actions'>
+export declare type OnlyFlows<T> = Omit<T, 'actions'>
+export declare type ActionsFromClassKeysIn<T> = {
+  readonly [K in keyof T]: ActionKeysInClassFromObject<T[K]>
 }
-export declare type StateModules<T> = {
-  readonly [K in keyof T]: StateClassModule<T[K]>
+export declare type KeysInClassesFrom<T> = {
+  readonly [K in keyof T]: RemoveActionKey<T[K]>
 }
-export declare type FlowModule<T> = {
+export declare type FlowObject<T> = {
   readonly [K in keyof T]: AFlow<T[K]>
 }
-export declare type FlowModules<T> = {
-  readonly [K in keyof T]: FlowModule<T[K]>
+export declare type ClassKeysAsFlow<T> = {
+  readonly [K in keyof T]: FlowObject<T[K]>
 }
 declare type QuickModule<T> = {
   readonly [K in keyof T]: T[K]
 }
-export interface La<T> {
-  f: FlowModule<StateModule<T>>
-  q: QuickModule<StateModule<T>>
+export declare type ActionsFromStore<T> = T extends {
+  actions: any
 }
-export declare type LaSensType<T> = {
-  actions: ActionModules<T>
-  flows: FlowModules<StateModules<T>>
-  state: StateModules<T>
+  ? T['actions']
+  : any
+export declare type FlowsFromStore<T> = T extends {
+  flows: any
+}
+  ? T['flows']
+  : any
+export interface La<T, S> {
+  f: FlowObject<OnlyFlows<T>>
+  q: QuickModule<OnlyFlows<T>>
+  actions: ActionsFromStore<S>
+  flows: FlowsFromStore<S>
+}
+export interface LaSensType<T> {
+  actions: ActionsFromClassKeysIn<T>
+  flows: ClassKeysAsFlow<KeysInClassesFrom<T>>
+  state: KeysInClassesFrom<T>
 }
 export declare const META_CLASS = 'class'
 export interface ISens<T> {
-  actions: ActionModules<T>
-  flows: FlowModules<StateModules<T>>
-  state: StateModules<T>
+  actions: ActionsFromClassKeysIn<T>
+  flows: ClassKeysAsFlow<KeysInClassesFrom<T>>
+  state: KeysInClassesFrom<T>
   renew(): any
   newContext(context: any): LaSensType<T>
 }
