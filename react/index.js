@@ -138,11 +138,12 @@ function makeDqFlowsProxyHandler() {
     },
   }
 }
-function dynamiqueHooksConnector(dynamique) {
+function dynamiqueHooksConnector(store) {
   const dProxyHandler = {
     get(cache, className) {
       let m = cache[className]
-      if (!m) m = cache[className] = new Proxy(dynamique[className], makeDqFlowsProxyHandler())
+      if (!m)
+        m = cache[className] = new Proxy(store.dynamique[className], makeDqFlowsProxyHandler())
       return m
     },
   }

@@ -20,7 +20,5 @@ declare type ApplyHook<T> = {
 declare type IDynamique4Hooks<T> = {
   [K in keyof T]: ApplyHook<ExtractClass<T[K]>>
 }
-export declare function dynamiqueHooksConnector<T, A>(
-  dynamique: IDynamique<T, A>,
-): IDynamique4Hooks<A>
+export declare function dynamiqueHooksConnector<T, A>(store: IDynamique<T, A>): IDynamique4Hooks<A>
 export {}
