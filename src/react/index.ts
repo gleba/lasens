@@ -142,7 +142,7 @@ function makeDqFlowsProxyHandler() {
   }
 }
 
-export function dynamiqueHooksConnector<T, A>(dynamique: IDynamique<T, A>): IDynamique4Hooks<T> {
+export function dynamiqueHooksConnector<T, A>(dynamique: IDynamique<T, A>): IDynamique4Hooks<A> {
   const dProxyHandler = {
     get(cache, className) {
       let m = cache[className]

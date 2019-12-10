@@ -1,5 +1,6 @@
 'use strict'
 Object.defineProperty(exports, '__esModule', { value: true })
+const alak_1 = require('alak')
 const react_1 = require('react')
 const utils_1 = require('../core/utils')
 function useFlow(flow) {
@@ -111,3 +112,40 @@ function useOnFlow(flow, listingFn, ...diff) {
   }, [flow, ...diff])
 }
 exports.useOnFlow = useOnFlow
+function makeDqFlowsProxyHandler() {
+  const cache = {}
+  function makeFlow(dqModule, flowName) {
+    const proxyFlow = alak_1.A()
+    let connectedTarget
+    proxyFlow.up(v => {
+      if (connectedTarget && connectedTarget.value != v) {
+        connectedTarget(v)
+      }
+    })
+    return function(dinoId) {
+      let target = dqModule(dinoId).flows[flowName]
+      if (connectedTarget) connectedTarget.down(proxyFlow)
+      connectedTarget = target
+      target.up(proxyFlow)
+      return proxyFlow
+    }
+  }
+  return {
+    get(dqModule, flowName) {
+      let f = cache[flowName]
+      if (!f) f = cache[flowName] = makeFlow(dqModule, flowName)
+      return f
+    },
+  }
+}
+function dynamiqueHooksConnector(dynamique) {
+  const dProxyHandler = {
+    get(cache, className) {
+      let m = cache[className]
+      if (!m) m = cache[className] = new Proxy(dynamique[className], makeDqFlowsProxyHandler())
+      return m
+    },
+  }
+  return new Proxy({}, dProxyHandler)
+}
+exports.dynamiqueHooksConnector = dynamiqueHooksConnector
