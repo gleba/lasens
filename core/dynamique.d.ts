@@ -22,7 +22,7 @@ export declare type LaAction<T> = T extends {
   : any
 declare type DynamiqueModule<T> = {
   actions: ActionFnResult<T>
-  flow: FlowModule<StateModule<T>>
+  flows: FlowModule<StateModule<T>>
 }
 declare type DynamiqueModules<T> = {
   [K in keyof T]: {

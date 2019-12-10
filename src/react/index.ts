@@ -1,6 +1,8 @@
 import { A, AFlow } from 'alak'
 import { useCallback, useEffect, useState } from 'react'
 import { alive } from '../core/utils'
+import { ExtractClass } from '../core/core'
+import { IDynamique } from '../core'
 
 export function useFlow<T>(flow: AFlow<T>): [T, AFlow<T>] {
   const [state, mutate] = useState(flow.value)
@@ -104,4 +106,49 @@ export function useOnFlow<T>(flow: AFlow<T>, listingFn: (v: T) => void, ...diff:
     flow.up(listingFn)
     return () => flow.down(listingFn)
   }, [flow, ...diff])
+}
+
+type ApplyHookZ<T> = {
+  (wrapValue: any): AFlow<T>
+}
+type ApplyHook<T> = { [K in keyof T]: ApplyHookZ<T[K]> }
+
+type IDynamique4Hooks<T> = { [K in keyof T]: ApplyHook<ExtractClass<T[K]>> }
+
+function makeDqFlowsProxyHandler() {
+  const cache = {}
+  function makeFlow(dqModule, flowName) {
+    const proxyFlow = A()
+    let connectedTarget
+    proxyFlow.up(v => {
+      if (connectedTarget && connectedTarget.value != v) {
+        connectedTarget(v)
+      }
+    })
+    return function(dinoId) {
+      let target = dqModule(dinoId).flows[flowName]
+      if (connectedTarget) connectedTarget.down(proxyFlow)
+      connectedTarget = target
+      target.up(proxyFlow)
+      return proxyFlow
+    }
+  }
+  return {
+    get(dqModule, flowName) {
+      let f = cache[flowName]
+      if (!f) f = cache[flowName] = makeFlow(dqModule, flowName)
+      return f
+    },
+  }
+}
+
+export function dynamiqueHooksConnector<T, A>(dynamique: IDynamique<T, A>): IDynamique4Hooks<T> {
+  const dProxyHandler = {
+    get(cache, className) {
+      let m = cache[className]
+      if (!m) m = cache[className] = new Proxy(dynamique[className], makeDqFlowsProxyHandler())
+      return m
+    },
+  }
+  return new Proxy({}, dProxyHandler)
 }
