@@ -32,7 +32,7 @@ export type LaAction<T> = T extends { actions: (...args: any) => any }
   : any
 type DynamiqueModule<T> = {
   actions: ActionFnResult<T>
-  flow: FlowModule<StateModule<T>>
+  flows: FlowModule<StateModule<T>>
 }
 
 type DynamiqueModules<T> = {
