@@ -115,18 +115,19 @@ exports.useOnFlow = useOnFlow
 function makeDqFlowsProxyHandler() {
   const cache = {}
   function makeFlow(dqModule, flowName) {
-    const proxyFlow = alak_1.A()
+    let proxyFlow = cache[flowName]
+    if (!proxyFlow) proxyFlow = cache[flowName] = alak_1.A()
     let connectedTarget
+    let needUpdate
     proxyFlow.up(v => {
-      if (connectedTarget && connectedTarget.value != v) {
-        connectedTarget(v)
-      }
+      needUpdate = connectedTarget && connectedTarget.value != v
+      needUpdate && connectedTarget(v)
     })
     return function(dinoId) {
       let target = dqModule(dinoId).flows[flowName]
-      if (connectedTarget) connectedTarget.down(proxyFlow)
+      connectedTarget && connectedTarget.down(proxyFlow)
       connectedTarget = target
-      target.up(proxyFlow)
+      needUpdate && target.up(proxyFlow)
       return proxyFlow
     }
   }
