@@ -22,5 +22,5 @@ declare type IDynamique4Hooks<T> = {
 }
 export declare function dynamiqueHooksConnector<T, A>(
   dynamique: IDynamique<T, A>,
-): IDynamique4Hooks<T>
+): IDynamique4Hooks<A>
 export {}
