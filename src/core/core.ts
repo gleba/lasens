@@ -62,7 +62,7 @@ export interface LaSensType<T> {
 }
 
 // export const META_HOLISTIC = 'holistic'
-// export const META_CLASSNAME = 'classname'
+export const META_MODULE_PATH = 'module_path'
 export const META_CLASS = 'class'
 
 export interface ISens<T> {

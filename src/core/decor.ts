@@ -2,7 +2,7 @@ import { alive, clearObject } from './utils'
 import { XStorage } from './localstore'
 import { safeModulePathHandler } from './debugHandlers'
 import A from 'alak'
-import { META_CLASS } from './core'
+import { META_CLASS, META_MODULE_PATH } from './core'
 
 enum Decor {
   Alive = 'alive',
@@ -57,18 +57,19 @@ const delay = [] as any[]
 const getDecors = classCon => (decorModuleMap.has(classCon) ? decorModuleMap.get(classCon) : {})
 const mergeKeys = (o1, o2) => Object.keys(o1).concat(Object.keys(o2).filter(k => !o1[k]))
 
-export function diamondMoment(instance, moduleName) {
+export function diamondMoment(instance, modulePath) {
   const classCon = instance.constructor
   const decors = getDecors(classCon)
-  const module = { _: { moduleName, classCon } }
+  const module = { _: { modulePath, classCon } }
   const arousal = []
 
   mergeKeys(instance, decors).forEach(name => {
     let initialValue = instance[name]
     let flow = alive(initialValue) ? A(initialValue) : A()
     flow.setName(name)
-    flow.setId(moduleName + '.' + name)
+    flow.setId(modulePath + '.' + name)
     flow.addMeta(META_CLASS, classCon)
+    flow.addMeta(META_MODULE_PATH, modulePath)
     awakening(flow, decors[name])
     module[name] = flow
   })
