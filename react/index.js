@@ -1,8 +1,9 @@
 'use strict'
 Object.defineProperty(exports, '__esModule', { value: true })
-const alak_1 = require('alak')
 const react_1 = require('react')
 const utils_1 = require('../core/utils')
+var dynamiqueHook_1 = require('./dynamiqueHook')
+exports.dynamiqueHooksConnector = dynamiqueHook_1.dynamiqueHooksConnector
 function useFlow(flow) {
   const [state, mutate] = react_1.useState(flow.value)
   react_1.useEffect(() => {
@@ -112,45 +113,3 @@ function useOnFlow(flow, listingFn, ...diff) {
   }, [flow, ...diff])
 }
 exports.useOnFlow = useOnFlow
-function makeDqFlowsProxyHandler() {
-  const cache = {}
-  function makeFlow(dqModule, flowName) {
-    let connectedTarget
-    let proxyFlow = cache[flowName]
-    if (!proxyFlow) {
-      proxyFlow = cache[flowName] = alak_1.A()
-      proxyFlow.up(v => {
-        if (connectedTarget && connectedTarget.value != v) {
-          connectedTarget(v)
-        }
-      })
-    }
-    return function(dinoId) {
-      let target = dqModule(dinoId).flows[flowName]
-      if (connectedTarget && connectedTarget.id != target.id) connectedTarget.down(proxyFlow)
-      connectedTarget = target
-      if (proxyFlow.id != target.id) target.up(proxyFlow)
-      proxyFlow.setId(target.id)
-      return proxyFlow
-    }
-  }
-  return {
-    get(dqModule, flowName) {
-      let f = cache[flowName]
-      if (!f) f = cache[flowName] = makeFlow(dqModule, flowName)
-      return f
-    },
-  }
-}
-function dynamiqueHooksConnector(store) {
-  const dProxyHandler = {
-    get(cache, className) {
-      let m = cache[className]
-      if (!m)
-        m = cache[className] = new Proxy(store.dynamique[className], makeDqFlowsProxyHandler())
-      return m
-    },
-  }
-  return new Proxy({}, dProxyHandler)
-}
-exports.dynamiqueHooksConnector = dynamiqueHooksConnector

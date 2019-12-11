@@ -44,19 +44,6 @@ type DynamiqueModules<T> = {
     removeById(id: string | number): void
   }
 }
-// export interface LaDynamiqueType<T> extends LaSensType<T> {
-//   free():void
-// }
-//
-// type DynamiqueModules<T> = {
-//   [K in keyof T]: {
-//     (target?: any): LaDynamiqueType<ExtractClass<T[K]>>
-//     broadcast: LaSensType<ExtractClass<T[K]>>
-//     create(o?: any): LaDynamiqueType<ExtractClass<T[K]>>
-//     getById(id: string | number): LaDynamiqueType<ExtractClass<T[K]>>
-//     removeById(id: string | number): void
-//   }
-// }
 
 export interface IDynamique<U, T> extends ISens<U> {
   dynamique: DynamiqueModules<T>
@@ -109,12 +96,7 @@ export function Dynamique<U, T>(store: ISens<U>, modules: T): IDynamique<U, T> {
 
         actions = instance.actions.apply(context, [context, context])
         actions.id = id
-        // actions = {id, ...actions}
-        // Object.keys(actions).forEach(f=>{
-        //   f!="id" && actions[f].bind(actions)
-        // })
         if (actions.new) {
-          // actions.new(argument) //.apply(context, [argument])
           actions.new.apply(actions, [target])
         }
       }

@@ -1,19 +1,12 @@
-import A, { AFlow } from 'alak'
-import { ExtractClass, META_MODULE_PATH } from '../core/core'
-import { IDynamique } from '../core'
-
-type ApplyHookZ<T> = {
-  (wrapValue: any): AFlow<T>
-}
-type ApplyHook<T> = { [K in keyof T]: ApplyHookZ<T[K]> }
-
-type IDynamique4Hooks<T> = { [K in keyof T]: ApplyHook<ExtractClass<T[K]>> }
-
+'use strict'
+Object.defineProperty(exports, '__esModule', { value: true })
+const alak_1 = require('alak')
+const core_1 = require('../core/core')
 function makeDqFlowsProxyHandler() {
   const cache = {}
   const activeMap = {}
-  const setActive = (flow: AFlow<any>, v) => {
-    let modulePath = flow.getMeta(META_MODULE_PATH)
+  const setActive = (flow, v) => {
+    let modulePath = flow.getMeta(core_1.META_MODULE_PATH)
     if (!activeMap[modulePath]) {
       activeMap[modulePath] = { [flow.name]: v }
     } else {
@@ -21,8 +14,8 @@ function makeDqFlowsProxyHandler() {
     }
   }
   const timeoutMap = {}
-  function clearUsage(flow: AFlow<any>, clearFn) {
-    let modulePath = flow.getMeta(META_MODULE_PATH)
+  function clearUsage(flow, clearFn) {
+    let modulePath = flow.getMeta(core_1.META_MODULE_PATH)
     if (timeoutMap[modulePath]) return
     const checkFn = () => {
       let o = activeMap[modulePath]
@@ -40,25 +33,24 @@ function makeDqFlowsProxyHandler() {
     }
   }
   function makeFlow(dqModule, flowName) {
-    let connectedTarget: AFlow<any>
+    let connectedTarget
     let proxyFlow = cache[flowName]
     if (!proxyFlow) {
-      proxyFlow = cache[flowName] = A()
+      proxyFlow = cache[flowName] = alak_1.default()
       proxyFlow.up(v => {
         if (connectedTarget && connectedTarget.value != v) {
           connectedTarget(v)
         }
       })
     }
-
     return function(argForD) {
       let dqm = dqModule(argForD)
       let target = dqm.flows[flowName]
-      // setActive(target, true)
+      setActive(target, true)
       if (connectedTarget && connectedTarget.id != target.id) {
         connectedTarget.down(proxyFlow)
-        // setActive(connectedTarget, false)
-        // clearUsage(connectedTarget, dqm.free)
+        setActive(connectedTarget, false)
+        clearUsage(connectedTarget, dqm.free)
       }
       connectedTarget = target
       if (proxyFlow.id != target.id) target.up(proxyFlow)
@@ -66,7 +58,6 @@ function makeDqFlowsProxyHandler() {
       return proxyFlow
     }
   }
-
   return {
     get(dqModule, flowName) {
       let f = cache[flowName]
@@ -75,8 +66,7 @@ function makeDqFlowsProxyHandler() {
     },
   }
 }
-
-export function dynamiqueHooksConnector<T, A>(store: IDynamique<T, A>): IDynamique4Hooks<A> {
+function dynamiqueHooksConnector(store) {
   const dProxyHandler = {
     get(cache, className) {
       let m = cache[className]
@@ -87,3 +77,4 @@ export function dynamiqueHooksConnector<T, A>(store: IDynamique<T, A>): IDynamiq
   }
   return new Proxy({}, dProxyHandler)
 }
+exports.dynamiqueHooksConnector = dynamiqueHooksConnector

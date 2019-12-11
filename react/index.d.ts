@@ -1,6 +1,5 @@
 import { AFlow } from 'alak'
-import { ExtractClass } from '../core/core'
-import { IDynamique } from '../core'
+export { dynamiqueHooksConnector } from './dynamiqueHook'
 export declare function useFlow<T>(flow: AFlow<T>): [T, AFlow<T>]
 export declare function useComputeFlow<T, U>(flow: AFlow<T>, computeFn: (v: T) => U): [U]
 export declare function useFlowFx<T>(flow: AFlow<T>, effectFn: (v: T) => void): [T]
@@ -11,14 +10,3 @@ export declare function useOnFlow<T>(
   listingFn: (v: T) => void,
   ...diff: any[]
 ): void
-declare type ApplyHookZ<T> = {
-  (wrapValue: any): AFlow<T>
-}
-declare type ApplyHook<T> = {
-  [K in keyof T]: ApplyHookZ<T[K]>
-}
-declare type IDynamique4Hooks<T> = {
-  [K in keyof T]: ApplyHook<ExtractClass<T[K]>>
-}
-export declare function dynamiqueHooksConnector<T, A>(store: IDynamique<T, A>): IDynamique4Hooks<A>
-export {}
