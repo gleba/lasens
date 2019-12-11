@@ -6,7 +6,7 @@ const utils_1 = require('./utils')
 const debugHandlers_1 = require('./debugHandlers')
 const stateProxyHandler_1 = require('./stateProxyHandler')
 // export const META_HOLISTIC = 'holistic'
-// export const META_CLASSNAME = 'classname'
+exports.META_MODULE_PATH = 'module_path'
 exports.META_CLASS = 'class'
 function LaSens(modules) {
   const availableModules = () => 'available modules: ' + Object.keys(sleepingModules).toString()

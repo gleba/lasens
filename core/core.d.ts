@@ -50,6 +50,7 @@ export interface LaSensType<T> {
   flows: ClassKeysAsFlow<KeysInClassesFrom<T>>
   state: KeysInClassesFrom<T>
 }
+export declare const META_MODULE_PATH = 'module_path'
 export declare const META_CLASS = 'class'
 export interface ISens<T> {
   actions: ActionsFromClassKeysIn<T>

@@ -50,17 +50,18 @@ exports.holistic = decorBase(Decor.Alive)
 const delay = []
 const getDecors = classCon => (decorModuleMap.has(classCon) ? decorModuleMap.get(classCon) : {})
 const mergeKeys = (o1, o2) => Object.keys(o1).concat(Object.keys(o2).filter(k => !o1[k]))
-function diamondMoment(instance, moduleName) {
+function diamondMoment(instance, modulePath) {
   const classCon = instance.constructor
   const decors = getDecors(classCon)
-  const module = { _: { moduleName, classCon } }
+  const module = { _: { modulePath, classCon } }
   const arousal = []
   mergeKeys(instance, decors).forEach(name => {
     let initialValue = instance[name]
     let flow = utils_1.alive(initialValue) ? alak_1.default(initialValue) : alak_1.default()
     flow.setName(name)
-    flow.setId(moduleName + '.' + name)
+    flow.setId(modulePath + '.' + name)
     flow.addMeta(core_1.META_CLASS, classCon)
+    flow.addMeta(core_1.META_MODULE_PATH, modulePath)
     awakening(flow, decors[name])
     module[name] = flow
   })
