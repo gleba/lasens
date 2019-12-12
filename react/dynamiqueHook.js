@@ -46,11 +46,11 @@ function makeDqFlowsProxyHandler() {
     return function(argForD) {
       let dqm = dqModule(argForD)
       let target = dqm.flows[flowName]
-      setActive(target, true)
+      // setActive(target, true)
       if (connectedTarget && connectedTarget.id != target.id) {
         connectedTarget.down(proxyFlow)
-        setActive(connectedTarget, false)
-        clearUsage(connectedTarget, dqm.free)
+        // setActive(connectedTarget, false)
+        // clearUsage(connectedTarget, dqm.free)
       }
       connectedTarget = target
       if (proxyFlow.id != target.id) target.up(proxyFlow)

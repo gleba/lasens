@@ -52,16 +52,18 @@ function makeDqFlowsProxyHandler() {
     }
 
     return function(argForD) {
-      let dqm = dqModule(argForD)
-      let target = dqm.flows[flowName]
-      // setActive(target, true)
+      let dqm = dqModule(argForD ? argForD : '-_-')
+      let target: AFlow<any> = dqm.flows[flowName]
       if (connectedTarget && connectedTarget.id != target.id) {
         connectedTarget.down(proxyFlow)
-        // setActive(connectedTarget, false)
-        // clearUsage(connectedTarget, dqm.free)
       }
       connectedTarget = target
-      if (proxyFlow.id != target.id) target.up(proxyFlow)
+      if (proxyFlow.id != target.id) {
+        target.up(proxyFlow)
+        if (target.isEmpty && !proxyFlow.isEmpty) {
+          proxyFlow(undefined)
+        }
+      }
       proxyFlow.setId(target.id)
       return proxyFlow
     }

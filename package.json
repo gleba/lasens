@@ -1,6 +1,6 @@
 {
   "name": "lasens",
-  "version": "0.0.57",
+  "version": "0.0.58",
   "description": "La Sens Store",
   "main": "core/index.js",
   "typings": "core/index.d.ts",

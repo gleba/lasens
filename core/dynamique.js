@@ -44,12 +44,7 @@ function Dynamique(store, modules) {
         context = Object.assign({ f, q, id, target }, context)
         actions = instance.actions.apply(context, [context, context])
         actions.id = id
-        // actions = {id, ...actions}
-        // Object.keys(actions).forEach(f=>{
-        //   f!="id" && actions[f].bind(actions)
-        // })
         if (actions.new) {
-          // actions.new(argument) //.apply(context, [argument])
           actions.new.apply(actions, [target])
         }
       }
