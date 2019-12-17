@@ -52,7 +52,7 @@ export interface La<T, S> {
   q: QuickModule<OnlyFlows<T>>
   actions: ActionsFromStore<S>
   flows: FlowsFromStore<S>
-  state: StateFromStore<T>
+  state: StateFromStore<S>
 }
 
 export interface LaSensType<T> {

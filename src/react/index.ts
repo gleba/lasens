@@ -50,25 +50,21 @@ export function useFlowFx<T>(flow: AFlow<T>, effectFn: (v: T) => void): [T] {
 
 export function useASyncFlow<T, U>(flow: AFlow<T>, mixin?: (v: T) => U): [U, Boolean] {
   const [state, mutate] = alive(flow.value) ? useState(flow.value) : useState()
-  let busy
-  if (flow.isAsync) {
-    const [now, change] = useState(false)
-    busy = { now, change }
-  }
+  // let busy
+  // if (flow.isAsync) {
+  const [now, change] = useState(false)
+  // busy = { now, change }
+  // }
   useEffect(() => {
     const mutator = v => state !== v && mutate(v)
     flow.up(mutator)
-    if (busy) flow.on.await(busy.change)
+    flow.on.await(change)
     return () => {
       flow.down(mutator)
-      if (busy) flow.off.await(busy.change)
+      flow.off.await(change)
     }
   }, [flow])
-  if (busy) return [state, busy.now]
-  else {
-    console.warn('flow [', flow.id, '] - is not an asynchronous')
-    return [state, false]
-  }
+  return [state, now]
 }
 
 const asEventHandler = (e, value) => {
