@@ -1,5 +1,5 @@
 {
   "watch": ["packages","tests", "scripts"],
   "ext": "ts",
-  "exec": "node dev"
+  "exec": "node build"
 }

@@ -1,58 +1,97 @@
-import { rmdir, existsSync } from 'fs-extra'
+import {
+  rmdir,
+  existsSync,
+  mkdirpSync,
+  readJSON,
+  writeJSON,
+  writeJSONSync,
+  readJSONSync,
+} from 'fs-extra'
 import * as path from 'path'
-import { exec, execSync } from 'child_process'
-import { renameSync, rmdirSync } from 'fs'
+import { exec, execSync, fork } from 'child_process'
+import { mkdirSync, renameSync, rmdirSync } from 'fs'
 const chalk = require('chalk')
 const { log } = console
 
 const executeCommand = (command, cwd) =>
   new Promise(async done => {
     exec(command, { cwd: cwd }, (error, stdout) => {
-      // if (error) log(chalk.redBright(error))
+      if (error) {
+        log(chalk.grey('Error:'), chalk.yellow(cwd))
+        log(chalk.redBright(error))
+        process.exit()
+      }
       log(stdout)
       log(chalk.grey('done '), chalk.gray(command))
       done()
     })
   })
 
-// prettier-ignore
-// @ts-ignore
-const clearDir = name => new Promise(async done => rmdir(path.resolve(name), { recursive: true }, done))
-const rm = name => rmdirSync(name, {
-  recursive:true
-})
+const prepare = async name => {
+  existsSync(name) && rm(name)
+  mkdirSync(name)
+}
+const rm = name =>
+  rmdirSync(name, {
+    recursive: true,
+  })
+const dirName = 'TEMPleDocs'
 const homeDir = path.resolve('.')
-async function extract(command, arg) {
-  const pathParts = command.split('/')
-  const moduleName = `${pathParts[1]}/${pathParts[2]}`
-  const apiExtractorPath = path.resolve(path.join(...pathParts))
-  const run = async () => {
-    log(chalk.gray("run "), moduleName)
-    await executeCommand(`node ${apiExtractorPath} ${arg}`, homeDir)
-  }
-  if (existsSync(apiExtractorPath)) {
-    await run()
+const workDir = path.resolve('TEMPleDocs')
+const extractor = 'extractor'
+const documenter = 'documenter'
+const cfgFile = 'api-extractor.json'
+
+const getModuleStartPath = name => `node_modules/@microsoft/api-${name}/lib/start.js`
+async function checkModule(name) {
+  const modulePath = getModuleStartPath(name)
+  if (!existsSync(modulePath)) {
+    log(chalk.grey('installing '), name)
+    await executeCommand(`npm i @microsoft/api-${name}`, homeDir)
   } else {
-    log(chalk.grey("installing module"), moduleName)
-    await executeCommand(`npm i ${moduleName}`, homeDir)
-    await run()
+    log(chalk.grey(`module ${name} found`))
   }
 }
 
+async function extractApi(name) {
+  log(chalk.grey(`extract api`), name + '...')
+  const cwd = path.join(workDir, name)
+  mkdirSync(cwd)
+  const config = readJSONSync(path.join(homeDir, 'scripts', cfgFile))
+  const outFilePath = `../input/${name}.api.json`
+  config.mainEntryPointFilePath = `../../lib/${name}/index.d.ts`
+  config.docModel.apiJsonFilePath = outFilePath
+  writeJSONSync(path.join(cwd, cfgFile), config)
+  log(chalk.grey(`config ready`), name)
+  await executeCommand(`node ../../${getModuleStartPath(extractor)} run -c ${cfgFile}`, cwd)
+  log(chalk.grey(`api ready`), path.join(cwd, outFilePath))
+  const api = readJSONSync(path.join(cwd, outFilePath))
+  api.name = name
+  writeJSONSync(path.join(cwd, outFilePath), api)
+  log(chalk.grey(`complete`), name)
+}
+
 const info = text => log(chalk.green.bold(text))
-log('make documentation')
-clearDir('lib').then(async () => {
+const tsc = async () => {
   info('compiling typescript packages')
   await executeCommand(
-    `node ${path.resolve('node_modules/typescript/lib/tsc')}`,
+    'node ' + path.resolve('node_modules/typescript/lib/tsc'),
     path.resolve('packages'),
   )
-  info("extract api")
-  await extract('node_modules/@microsoft/api-extractor/lib/start.js', 'run')
-  info("make markdown")
-  await extract('node_modules/@microsoft/api-documenter/lib/start.js', 'markdown')
+  log('typescript compiled')
+}
+
+async function make() {
+  rm('lib')
   rm('docs')
-  renameSync('markdown', 'docs')
+  await Promise.all([tsc(), prepare(workDir)])
+  await Promise.all([checkModule(extractor), checkModule(documenter)])
+  await Promise.all([extractApi('core'), extractApi('react'), extractApi('vue')])
+  log('making documentation...')
+  await executeCommand(`node ../${getModuleStartPath(documenter)} markdown`, workDir)
+  log('cleaning working directory')
+  renameSync(path.resolve(workDir, 'markdown'), 'docs')
   renameSync('docs/index.md', 'docs/readme.md')
-  rm('input')
-})
+  rm(workDir)
+}
+make()

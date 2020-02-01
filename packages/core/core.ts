@@ -35,6 +35,9 @@ export type ActionsFromClassKeysIn<T> = {
 }
 export type KeysInClassesFrom<T> = { readonly [K in keyof T]: RemoveActionKey<T[K]> }
 
+/**
+ * @internal
+ */
 export type FlowObject<T> = { readonly [K in keyof T]: AFlow<T[K]> }
 // export type FlowObject<T> = { readonly [K in keyof T]: AFlow<T[K]> }
 export type ClassKeysAsFlow<T> = { readonly [K in keyof T]: FlowObject<T[K]> }
