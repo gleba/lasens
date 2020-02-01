@@ -1,3 +1,11 @@
+// Copyright (c) Gleb Panteleev. All rights reserved. Licensed under the MIT license.
+
+/**
+ * Миксин для Vue
+ * @remarks
+ * @packageDocumentation
+ */
+
 import {ISens} from "../core";
 import {installMixin} from "./install-mixin";
 import {AFlow} from "alak";

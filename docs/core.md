@@ -12,14 +12,16 @@
 
 ```typescript
 class SomeModule {
-  @qubit hello: string
-actions({ f }: La<SomeModule, IStore>) {
-    f.hello.up(console.log)
-    return {
-      say(){
-        f.hello("world")
-      }
-}}}
+ @qubit hello: string
+ actions({ f }: La<SomeModule, IStore>) {
+   f.hello.up(console.log)
+   return {
+     say(){
+       f.hello("world")
+     }
+   }
+ }
+}
 const modules = { SomeModule }
 type IStore = ISens<typeof modules>
 const store = LaSens(modules)

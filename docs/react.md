@@ -4,6 +4,11 @@
 
 ## react package
 
+Набор хуков для React
+
+## Remarks
+
+
 ## Functions
 
 |  Function | Description |

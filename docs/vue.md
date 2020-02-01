@@ -4,6 +4,11 @@
 
 ## vue package
 
+Миксин для Vue
+
+## Remarks
+
+
 ## Functions
 
 |  Function | Description |

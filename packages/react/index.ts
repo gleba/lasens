@@ -1,3 +1,11 @@
+// Copyright (c) Gleb Panteleev. All rights reserved. Licensed under the MIT license.
+
+/**
+ * Набор хуков для React
+ * @remarks
+ * @packageDocumentation
+ */
+
 import { A, AFlow } from 'alak'
 import { useCallback, useEffect, useState } from 'react'
 import { alive } from '../core/utils'
