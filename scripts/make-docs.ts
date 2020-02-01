@@ -91,7 +91,6 @@ async function make() {
   await executeCommand(`node ../${getModuleStartPath(documenter)} markdown`, workDir)
   log('cleaning working directory')
   renameSync(path.resolve(workDir, 'markdown'), 'docs')
-  renameSync('docs/index.md', 'docs/readme.md')
   rm(workDir)
 }
 make()

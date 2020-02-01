@@ -8,3 +8,4 @@ LaSens - Is it infinite state machine based on Alak functor for node.js backend 
 Please, open issue for english documentation.
 
 
+[DOCS (WIP)](./docs/index.md)
