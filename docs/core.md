@@ -43,7 +43,7 @@ store.actions.SomeModule.say()
 |  --- | --- |
 |  [IDynamique](./core.idynamique.md) |  |
 |  [ISens](./core.isens.md) |  |
-|  [La](./core.la.md) |  |
+|  [La](./core.la.md) | Аргументы функции конструктора модуля - actions |
 |  [LaSensType](./core.lasenstype.md) |  |
 
 ## Variables
@@ -51,6 +51,6 @@ store.actions.SomeModule.say()
 |  Variable | Description |
 |  --- | --- |
 |  [holistic](./core.holistic.md) |  |
-|  [qubit](./core.qubit.md) |  |
-|  [stored](./core.stored.md) |  |
+|  [qubit](./core.qubit.md) | Декоратор для инициализации пустого значения класса. |
+|  [stored](./core.stored.md) | Декоратор для сохранения в localStorage значения контейнера. |
 

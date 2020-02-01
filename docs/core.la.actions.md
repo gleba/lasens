@@ -4,8 +4,10 @@
 
 ## La.actions property
 
+действия доступные в хранилище
+
 <b>Signature:</b>
 
 ```typescript
-actions: ActionsFromStore<S>;
+actions: ActionsFromStore<IStore>;
 ```

@@ -4,6 +4,8 @@
 
 ## stored variable
 
+Декоратор для сохранения в localStorage значения контейнера.
+
 <b>Signature:</b>
 
 ```typescript

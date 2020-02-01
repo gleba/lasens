@@ -6,7 +6,7 @@
   "bundledPackages": [],
 
   "compiler": {
-    "tsconfigFilePath": "../../packages/tsconfig.json"
+    "tsconfigFilePath": "../../tsconfig.json"
   },
   "apiReport": {
     "enabled": true,

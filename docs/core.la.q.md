@@ -4,8 +4,10 @@
 
 ## La.q property
 
+данные функторов потока текущего класса
+
 <b>Signature:</b>
 
 ```typescript
-q: QuickModule<OnlyFlows<T>>;
+q: QuickModule<OnlyFlows<Module>>;
 ```

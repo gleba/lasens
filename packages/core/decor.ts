@@ -48,7 +48,15 @@ export const getter = decorFx(Decor.Getter)
 export const lazyGetter = decorFx(Decor.LazyGetter)
 export const wrapper = decorFx(Decor.Wrapper)
 export const changeFx = decorFx(Decor.Change)
+/**
+ * Декоратор для сохранения в localStorage значения контейнера.
+ * @public
+ */
 export const stored = decorBase(Decor.Stored)
+/**
+ * Декоратор для инициализации пустого значения класса.
+ * @public
+ */
 export const qubit = decorBase(Decor.Alive)
 export const holistic = decorBase(Decor.Alive)
 

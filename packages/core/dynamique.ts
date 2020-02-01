@@ -45,11 +45,12 @@ type DynamiqueModules<T> = {
   }
 }
 
-export interface IDynamique<U, T> extends ISens<U> {
-  dynamique: DynamiqueModules<T>
+export interface IDynamique<IStore, DModules> extends ISens<IStore> {
+  dynamique: DynamiqueModules<DModules>
+  renew():IDynamique<IStore, DModules>
 }
 
-export function Dynamique<U, T>(store: ISens<U>, modules: T): IDynamique<U, T> {
+export function Dynamique<S, D>(store: ISens<S>, modules: D): IDynamique<S, D> {
   const dynamiqueMap = new Map()
 
   function moduleOperations(moduleClass) {

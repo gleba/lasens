@@ -7,9 +7,9 @@
 <b>Signature:</b>
 
 ```typescript
-renew(): any;
+renew(): ISens<T>;
 ```
 <b>Returns:</b>
 
-`any`
+`ISens<T>`
 

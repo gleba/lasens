@@ -7,5 +7,5 @@
 <b>Signature:</b>
 
 ```typescript
-state: StateFromStore<S>;
+state: StateFromStore<IStore>;
 ```

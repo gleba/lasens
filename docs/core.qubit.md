@@ -4,6 +4,8 @@
 
 ## qubit variable
 
+Декоратор для инициализации пустого значения класса.
+
 <b>Signature:</b>
 
 ```typescript

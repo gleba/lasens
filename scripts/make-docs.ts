@@ -10,34 +10,13 @@ import {
 import * as path from 'path'
 import { exec, execSync, fork } from 'child_process'
 import { mkdirSync, readdirSync, renameSync, rmdirSync } from 'fs'
+import { info, log0, rm, prepare, executeCommand } from './helpers'
+import { tsc } from './make-lib'
 const chalk = require('chalk')
 const { log } = console
-const info = text => log(chalk.green.bold(text))
-const log0 = (...text) => log(chalk.grey(...text))
 
-const executeCommand = (command, cwd) =>
-  new Promise(async done => {
-    exec(command, { cwd: cwd }, (error, stdout) => {
-      if (error) {
-        log(chalk.grey('Error:'), chalk.yellow(cwd))
-        log(chalk.redBright(error))
-        process.exit()
-      }
-      // log(chalk.gray(stdout))
-      log(chalk.green('done'), chalk.grey(command))
-      done()
-    })
-  })
 
-const prepare = async path => {
-  if (existsSync(path))
-    rm(path)
-  mkdirSync(path)
-}
-const rm = name =>
-  rmdirSync(name, {
-    recursive: true,
-  })
+
 const dirName = 'TEMPleDocs'
 const homeDir = path.resolve('.')
 const workDir = path.resolve('TEMPleDocs')
@@ -69,26 +48,13 @@ async function extractApi(name) {
   const api = readJSONSync(path.join(cwd, outFilePath))
   api.name = name
   writeJSONSync(path.join(cwd, outFilePath), api)
-  log0(`api ready `+ name)
-}
-
-
-const tsc = async () => {
-  info('compiling typescript packages...')
-  await executeCommand(
-    'node ' + path.resolve('node_modules/typescript/lib/tsc'),
-    path.resolve('packages'),
-  )
-  log(chalk.grey('typescript compiled'))
+  log0(`api ready ` + name)
 }
 
 async function make() {
-  rm('lib')
-  await tsc()
-  info("prepare...")
-  prepare(workDir)
-  await Promise.all([checkModule(extractor), checkModule(documenter)])
+  await Promise.all([checkModule(extractor), checkModule(documenter), tsc()])
   info('extract api...')
+  prepare(workDir)
   await Promise.all([extractApi('core'), extractApi('react'), extractApi('vue')])
   info('making documentation...')
   await executeCommand(`node ../${getModuleStartPath(documenter)} markdown`, workDir)

@@ -13,7 +13,7 @@ export default {
     }
   },
   use(f){
-    console.log("use", f)
+    console.helpers("use", f)
 
   },
   created() {

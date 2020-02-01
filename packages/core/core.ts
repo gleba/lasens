@@ -50,12 +50,31 @@ export type ActionsFromStore<T> = T extends { actions: any } ? T['actions'] : an
 export type FlowsFromStore<T> = T extends { flows: any } ? T['flows'] : any
 export type StateFromStore<T> = T extends { state: any } ? T['state'] : any
 
-export interface La<T, S> {
-  f: FlowObject<OnlyFlows<T>>
-  q: QuickModule<OnlyFlows<T>>
-  actions: ActionsFromStore<S>
-  flows: FlowsFromStore<S>
-  state: StateFromStore<S>
+
+/**
+ * Аргументы функции конструктора модуля - actions
+ * @param Module текущий класс
+ * @param IStore тип хранилища
+ * @public
+ */
+export interface La<Module, IStore> {
+  /**
+   * функторы потока текущего класса
+   */
+  f: FlowObject<OnlyFlows<Module>>
+  /**
+   * данные функторов потока текущего класса
+   */
+  q: QuickModule<OnlyFlows<Module>>
+  /**
+   * действия доступные в хранилище
+   */
+  actions: ActionsFromStore<IStore>
+  /**
+   * потоки доступные в хранилище
+   */
+  flows: FlowsFromStore<IStore>
+  state: StateFromStore<IStore>
 }
 
 export interface LaSensType<T> {
@@ -72,9 +91,11 @@ export interface ISens<T> {
   actions: ActionsFromClassKeysIn<T>
   flows: ClassKeysAsFlow<KeysInClassesFrom<T>>
   state: KeysInClassesFrom<T>
-  renew()
+
+  renew(): ISens<T>
   newContext(context: any): LaSensType<T>
 }
+
 export function LaSens<T>(modules: T): ISens<T> {
   const availableModules = () => 'available modules: ' + Object.keys(sleepingModules).toString()
   const sleepingModules = {} as any
@@ -153,7 +174,14 @@ export function LaSens<T>(modules: T): ISens<T> {
     return false
   }
 
-  function renew(): void {
+  const sens = {
+    renew,
+    things,
+    newContext: makeSenseFor,
+    ...makeSenseFor(DEBUG_FACADE),
+  }
+
+  function renew() {
     clearObject(awakedActions)
     clearObject(awakedFlow)
     clearObject(usedWays)
@@ -162,12 +190,7 @@ export function LaSens<T>(modules: T): ISens<T> {
     for (let moduleName in modules) {
       sleepingModules[moduleName] = modules[moduleName]
     }
+    return sens
   }
-
-  return {
-    renew,
-    things,
-    newContext: makeSenseFor,
-    ...makeSenseFor(DEBUG_FACADE),
-  } as any
+  return sens
 }

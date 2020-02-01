@@ -4,8 +4,10 @@
 
 ## La.flows property
 
+потоки доступные в хранилище
+
 <b>Signature:</b>
 
 ```typescript
-flows: FlowsFromStore<S>;
+flows: FlowsFromStore<IStore>;
 ```

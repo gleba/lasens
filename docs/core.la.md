@@ -4,19 +4,21 @@
 
 ## La interface
 
+Аргументы функции конструктора модуля - actions
+
 <b>Signature:</b>
 
 ```typescript
-export interface La<T, S> 
+export interface La<Module, IStore> 
 ```
 
 ## Properties
 
 |  Property | Type | Description |
 |  --- | --- | --- |
-|  [actions](./core.la.actions.md) | <code>ActionsFromStore&lt;S&gt;</code> |  |
-|  [f](./core.la.f.md) | <code>FlowObject&lt;OnlyFlows&lt;T&gt;&gt;</code> |  |
-|  [flows](./core.la.flows.md) | <code>FlowsFromStore&lt;S&gt;</code> |  |
-|  [q](./core.la.q.md) | <code>QuickModule&lt;OnlyFlows&lt;T&gt;&gt;</code> |  |
-|  [state](./core.la.state.md) | <code>StateFromStore&lt;S&gt;</code> |  |
+|  [actions](./core.la.actions.md) | <code>ActionsFromStore&lt;IStore&gt;</code> | действия доступные в хранилище |
+|  [f](./core.la.f.md) | <code>FlowObject&lt;OnlyFlows&lt;Module&gt;&gt;</code> | функторы потока текущего класса |
+|  [flows](./core.la.flows.md) | <code>FlowsFromStore&lt;IStore&gt;</code> | потоки доступные в хранилище |
+|  [q](./core.la.q.md) | <code>QuickModule&lt;OnlyFlows&lt;Module&gt;&gt;</code> | данные функторов потока текущего класса |
+|  [state](./core.la.state.md) | <code>StateFromStore&lt;IStore&gt;</code> |  |
 

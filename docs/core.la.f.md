@@ -4,8 +4,10 @@
 
 ## La.f property
 
+функторы потока текущего класса
+
 <b>Signature:</b>
 
 ```typescript
-f: FlowObject<OnlyFlows<T>>;
+f: FlowObject<OnlyFlows<Module>>;
 ```
