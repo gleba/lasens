@@ -9,5 +9,5 @@
 <b>Signature:</b>
 
 ```typescript
-f: FlowObject<OnlyFlows<Module>>;
+f: AtomsObject<OnlyAtoms<Module>>;
 ```

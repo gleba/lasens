@@ -6,13 +6,13 @@
  * @packageDocumentation
  */
 
-import { A, AFlow } from 'alak'
+import { A, IAtom } from 'alak'
 import { useCallback, useEffect, useState } from 'react'
 import { alive } from '../core/utils'
 
 export { dynamiqueHooksConnector } from './dynamiqueHook'
 
-export function useFlow<T>(flow: AFlow<T>): [T, AFlow<T>] {
+export function useFlow<T>(flow: IAtom<T>): [T, IAtom<T>] {
   const [state, mutate] = useState(flow.value)
   useEffect(() => {
     flow.up(mutate)
@@ -22,7 +22,7 @@ export function useFlow<T>(flow: AFlow<T>): [T, AFlow<T>] {
   return [state, useCallback(flow, [flow])]
 }
 
-export function useComputeFlow<T, U>(flow: AFlow<T>, computeFn: (v: T) => U): [U] {
+export function useComputeFlow<T, U>(flow: IAtom<T>, computeFn: (v: T) => U): [U] {
   let lastValue = flow.value
   let value = computeFn(lastValue)
   const [state, mutate] = useState(value)
@@ -39,7 +39,7 @@ export function useComputeFlow<T, U>(flow: AFlow<T>, computeFn: (v: T) => U): [U
   return [state]
 }
 
-export function useFlowFx<T>(flow: AFlow<T>, effectFn: (v: T) => void): [T] {
+export function useFlowFx<T>(flow: IAtom<T>, effectFn: (v: T) => void): [T] {
   let lastValue = flow.value
   const [state, mutate] = alive(lastValue) ? useState(lastValue) : useState()
   let mutateFx = v => {
@@ -56,7 +56,7 @@ export function useFlowFx<T>(flow: AFlow<T>, effectFn: (v: T) => void): [T] {
   return [state]
 }
 
-export function useASyncFlow<T, U>(flow: AFlow<T>, mixin?: (v: T) => U): [U, Boolean] {
+export function useASyncFlow<T, U>(flow: IAtom<T>, mixin?: (v: T) => U): [U, Boolean] {
   const [state, mutate] = alive(flow.value) ? useState(flow.value) : useState()
   // let busy
   // if (flow.isAsync) {
@@ -66,10 +66,10 @@ export function useASyncFlow<T, U>(flow: AFlow<T>, mixin?: (v: T) => U): [U, Boo
   useEffect(() => {
     const mutator = v => state !== v && mutate(v)
     flow.up(mutator)
-    flow.on.await(change)
+    flow.onAwait(change)
     return () => {
       flow.down(mutator)
-      flow.off.await(change)
+      flow.onAwait(change)
     }
   }, [flow])
   return [state, now]
@@ -85,7 +85,7 @@ const asEventHandler = (e, value) => {
   return ''
 }
 
-export function useInputFlow<T>(flow: AFlow<T>, effectFn?: (v: T) => void): [T, any] {
+export function useInputFlow<T>(flow: IAtom<T>, effectFn?: (v: T) => void): [T, any] {
   let lastValue = flow.value
   const [state, mutate] = alive(lastValue) ? useState(lastValue) : useState()
   const mutateFx = v => {
@@ -105,7 +105,7 @@ export function useInputFlow<T>(flow: AFlow<T>, effectFn?: (v: T) => void): [T, 
   return [state, eventHandler]
 }
 
-export function useOnFlow<T>(flow: AFlow<T>, listingFn: (v: T) => void, ...diff: any[]): void {
+export function useOnFlow<T>(flow: IAtom<T>, listingFn: (v: T) => void, ...diff: any[]): void {
   useEffect(() => {
     flow.up(listingFn)
     return () => flow.down(listingFn)

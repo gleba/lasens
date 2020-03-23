@@ -82,43 +82,43 @@ export function diamondMoment(instance, modulePath) {
     module[name] = flow
   })
 
-  function awakening(flow, decors) {
+  function awakening(atom, decors) {
     if (!decors) return
-    decors[Decor.Stored] && XStorage.bindFlow(flow)
+    decors[Decor.Stored] && XStorage.bindFlow(atom)
     let delayed = []
     Object.keys(decors).forEach(decor => {
       switch (decor as any) {
         case Decor.Alive:
           break
         case Decor.Stored:
-          XStorage.bindFlow(flow)
+          XStorage.bindFlow(atom)
           break
         default:
           delayed.push([decor, decors[decor]])
       }
     })
-    arousal.push([flow, delayed])
+    arousal.push([atom, delayed])
   }
 
   const safeModule = new Proxy(module, safeModulePathHandler)
   return [safeModule, arousal]
 }
 export function wakeUp(arousal) {
-  arousal.forEach(([flow, delayed]) =>
+  arousal.forEach(([atom, delayed]) =>
     delayed.forEach(([decor, fx]) => {
       switch (decor) {
         case Decor.Wrapper:
-          flow.useWrapper(fx)
+          atom.useWrapper(fx)
           break
         case Decor.Getter:
-          flow.useGetter(fx)
-          flow()
+          atom.useGetter(fx)
+          atom()
           break
         case Decor.LazyGetter:
-          flow.useGetter(fx)
+          atom.useGetter(fx)
           break
         case Decor.Change:
-          flow.up(decor)
+          atom.up(decor)
           break
       }
     }),

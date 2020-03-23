@@ -9,5 +9,5 @@
 <b>Signature:</b>
 
 ```typescript
-flows: FlowsFromStore<IStore>;
+flows: AtomsFromStore<IStore>;
 ```

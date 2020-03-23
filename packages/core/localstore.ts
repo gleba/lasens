@@ -15,7 +15,7 @@ export const XStorage = {
         localStorage.setItem(flow.id, JSON.stringify(v))
       )
     }
-    flow.on(A.STATE_CLEAR_VALUE, () => {
+    flow.onClear(() => {
       localStorage.removeItem((flow.id))
     })
     flow.up(v =>

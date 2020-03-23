@@ -36,7 +36,7 @@
   "dependencies": {
     "@microsoft/api-documenter": "^7.7.12",
     "@types/fs-extra": "^8.0.1",
-    "alak": "^1.0.33",
+    "alak": "^2.0.1-rc1",
     "chalk": "^3.0.0"
   }
 }

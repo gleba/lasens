@@ -4,12 +4,12 @@ import { Do } from '../lib/core/dynamique'
 
 class SessionController {
   score = 0
-  actions({ f, q, dynamique, id }: Do<SessionController, IStore>) {
+  actions({ a, q, dynamique, id }: Do<SessionController, IStore>) {
     dynamique.SessionController.broadcast.actions.hi(id)
     return {
       hi(fromId) {
         console.log(`im a ${id}, got hi from ${fromId}, an my score:${q.score}`)
-        f.score(q.score + 1)
+        a.score(q.score + 1)
       },
       goodbye() {
         dynamique.SessionController.removeById(id)

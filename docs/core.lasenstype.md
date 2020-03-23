@@ -15,6 +15,6 @@ export interface LaSensType<T>
 |  Property | Type | Description |
 |  --- | --- | --- |
 |  [actions](./core.lasenstype.actions.md) | <code>ActionsFromClassKeysIn&lt;T&gt;</code> |  |
-|  [flows](./core.lasenstype.flows.md) | <code>ClassKeysAsFlow&lt;KeysInClassesFrom&lt;T&gt;&gt;</code> |  |
+|  [flows](./core.lasenstype.flows.md) | <code>ClassKeysAsAtom&lt;KeysInClassesFrom&lt;T&gt;&gt;</code> |  |
 |  [state](./core.lasenstype.state.md) | <code>KeysInClassesFrom&lt;T&gt;</code> |  |
 

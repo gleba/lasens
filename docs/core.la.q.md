@@ -9,5 +9,5 @@
 <b>Signature:</b>
 
 ```typescript
-q: QuickModule<OnlyFlows<Module>>;
+q: QuickModule<OnlyAtoms<Module>>;
 ```

@@ -1,9 +1,9 @@
-import A, { AFlow } from 'alak'
+import A, { IAtom } from 'alak'
 import { ExtractClass, META_MODULE_PATH } from '../core/core'
 import { IDynamique } from '../core'
 
 type ApplyHookZ<T> = {
-  (wrapValue: any): AFlow<T>
+  (wrapValue: any): IAtom<T>
 }
 type ApplyHook<T> = { [K in keyof T]: ApplyHookZ<T[K]> }
 
@@ -12,7 +12,7 @@ type IDynamique4Hooks<T> = { [K in keyof T]: ApplyHook<ExtractClass<T[K]>> }
 function makeDqFlowsProxyHandler() {
   const cache = {}
   const activeMap = {}
-  const setActive = (flow: AFlow<any>, v) => {
+  const setActive = (flow: IAtom<any>, v) => {
     let modulePath = flow.getMeta(META_MODULE_PATH)
     if (!activeMap[modulePath]) {
       activeMap[modulePath] = { [flow.name]: v }
@@ -21,7 +21,7 @@ function makeDqFlowsProxyHandler() {
     }
   }
   const timeoutMap = {}
-  function clearUsage(flow: AFlow<any>, clearFn) {
+  function clearUsage(flow: IAtom<any>, clearFn) {
     let modulePath = flow.getMeta(META_MODULE_PATH)
     if (timeoutMap[modulePath]) return
     const checkFn = () => {
@@ -40,7 +40,7 @@ function makeDqFlowsProxyHandler() {
     }
   }
   function makeFlow(dqModule, flowName) {
-    let connectedTarget: AFlow<any>
+    let connectedTarget: IAtom<any>
     let proxyFlow = cache[flowName]
     if (!proxyFlow) {
       proxyFlow = cache[flowName] = A()
@@ -53,7 +53,7 @@ function makeDqFlowsProxyHandler() {
 
     return function(argForD) {
       let dqm = dqModule(argForD ? argForD : '-_-')
-      let target: AFlow<any> = dqm.flows[flowName]
+      let target: IAtom<any> = dqm.flows[flowName]
       if (connectedTarget && connectedTarget.id != target.id) {
         connectedTarget.down(proxyFlow)
       }

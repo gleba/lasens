@@ -15,7 +15,7 @@ export interface ISens<T>
 |  Property | Type | Description |
 |  --- | --- | --- |
 |  [actions](./core.isens.actions.md) | <code>ActionsFromClassKeysIn&lt;T&gt;</code> |  |
-|  [flows](./core.isens.flows.md) | <code>ClassKeysAsFlow&lt;KeysInClassesFrom&lt;T&gt;&gt;</code> |  |
+|  [flows](./core.isens.flows.md) | <code>ClassKeysAsAtom&lt;KeysInClassesFrom&lt;T&gt;&gt;</code> |  |
 |  [state](./core.isens.state.md) | <code>KeysInClassesFrom&lt;T&gt;</code> |  |
 
 ## Methods

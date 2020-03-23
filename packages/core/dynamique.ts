@@ -1,13 +1,13 @@
 import {
   ActionFnResult,
-  ClassKeysAsFlow,
+  ClassKeysAsAtom,
   ExtractClass,
-  FlowObject,
+  AtomsObject,
   ISens,
   La,
   LaSensType,
 } from './core'
-import { A, AFlow } from 'alak'
+import { A, IAtom } from 'alak'
 
 import { DEBUG_DYN_MODULE, DEBUG_FACADE } from './utils'
 import { proxyLoggerDynamique, proxyLoggerFlow } from './debugHandlers'
@@ -16,7 +16,7 @@ import { diamondMoment, wakeUp } from './decor'
 import { stateModuleProxy } from './stateProxyHandler'
 
 type StateModule<T> = Omit<T, 'actions'>
-type FlowModule<T> = { readonly [K in keyof T]: AFlow<T[K]> }
+type FlowModule<T> = { readonly [K in keyof T]: IAtom<T[K]> }
 
 export type DynamiqueFromStore<T> = T extends { dynamique: any } ? T['dynamique'] : any
 
@@ -32,7 +32,7 @@ export type LaAction<T> = T extends { actions: (...args: any) => any }
   : any
 type DynamiqueModule<T> = {
   actions: ActionFnResult<T>
-  flows: FlowModule<StateModule<T>>
+  atoms: FlowModule<StateModule<T>>
 }
 
 type DynamiqueModules<T> = {
@@ -83,17 +83,17 @@ export function Dynamique<S, D>(store: ISens<S>, modules: D): IDynamique<S, D> {
       if (instance.actions) {
         let contextDebug = [id, instance.constructor.name, ...DEBUG_DYN_MODULE]
         let context = store.newContext(contextDebug)
-        let f
-        if (A.canLog) {
-          let p = new Proxy({ x: safeModule }, proxyLoggerFlow(contextDebug))
-          f = p.x
-        } else {
-          f = safeModule
-        }
+        let a
+        // if (A.canLog) {
+        //   let p = new Proxy({ x: safeModule }, proxyLoggerFlow(contextDebug))
+        //   f = p.x
+        // } else {
+          a = safeModule
+        // }
 
         let q = stateModuleProxy(safeModule)
 
-        context = Object.assign({ f, q, id, target }, context)
+        context = Object.assign({ a, q, id, target }, context)
 
         actions = instance.actions.apply(context, [context, context])
         actions.id = id
@@ -148,8 +148,8 @@ export function Dynamique<S, D>(store: ISens<S>, modules: D): IDynamique<S, D> {
   })
 
   store['things'].dynamique = [dynamique, proxyLoggerDynamique]
-  store['dynamique'] = A.canLog
-    ? new Proxy(dynamique, proxyLoggerDynamique(DEBUG_FACADE))
-    : dynamique
+  store['dynamique'] = dynamique//A.canLog
+  //   ? new Proxy(dynamique, proxyLoggerDynamique(DEBUG_FACADE))
+  //   : dynamique
   return store as any
 }

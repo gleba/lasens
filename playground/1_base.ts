@@ -11,11 +11,11 @@ import { ISens, La, LaSens, qubit } from '../packages/core'
 
 export class BaseModule {
   @qubit thing: string
-  actions({ f }: La<BaseModule, IStore>) {
-    f.thing.up(console.log)
+  actions({ a }: La<BaseModule, IStore>) {
+    a.thing.up(console.log)
     return {
       sayWorld() {
-        f.thing('world')
+        a.thing('world')
       },
     }
   }
@@ -28,7 +28,7 @@ export class BaseModule {
 const modules = { BaseModule }
 type IStore = ISens<typeof modules>
 const store = LaSens(modules).renew()
-store.flows.BaseModule.thing('hello')
+store.atoms.BaseModule.thing('hello')
 store.actions.BaseModule.sayWorld()
 // выведет в терминале
 // hello

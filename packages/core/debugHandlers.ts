@@ -44,12 +44,12 @@ export function proxyLoggerAction(context) {
     get(o, key) {
       return (...a) => {
         let uid = modulePath + '.' + key
-        A.log({
-          type: ActionType,
-          context,
-          uid,
-          value: a,
-        })
+        // A.log({
+        //   type: ActionType,
+        //   context,
+        //   uid,
+        //   value: a,
+        // })
         return o[key](...a)
       }
     },
@@ -131,12 +131,12 @@ export function proxyLoggerFlow(context) {
 export function proxyLoggerDynamique(context) {
   const logCreateModule = (o, a) => {
     let m = o(...a)
-    A.log({
-      type: CreateType,
-      context,
-      uid: m.id,
-      value: a,
-    })
+    // A.log({
+    //   type: CreateType,
+    //   context,
+    //   uid: m.id,
+    //   value: a,
+    // })
     return m
   }
   const ways = {}
@@ -168,11 +168,11 @@ export function proxyLoggerDynamique(context) {
           return m
         case 'removeById':
           return uid => {
-            A.log({
-              type: RemoveType,
-              context,
-              uid,
-            })
+            // A.log({
+            //   type: RemoveType,
+            //   context,
+            //   uid,
+            // })
             o[key](uid)
           }
       }

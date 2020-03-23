@@ -7,5 +7,5 @@
 <b>Signature:</b>
 
 ```typescript
-flows: ClassKeysAsFlow<KeysInClassesFrom<T>>;
+flows: ClassKeysAsAtom<KeysInClassesFrom<T>>;
 ```

@@ -1,11 +1,11 @@
-import {AFlow} from 'alak'
+import {IAtom} from 'alak'
 
 
 export interface Obj<V> {
   [s: string]: V
 }
 
-export const extractEventTarget = <T>(f: AFlow<T>) => (e: any) => f(e.target.value)
+export const extractEventTarget = <T>(f: IAtom<T>) => (e: any) => f(e.target.value)
 export const alive = v => (v !== undefined && v !== null) as boolean
 export const isTruth = v => !!v
 export const nullFilter = f => v => (alive(v) ? f(v) : null)
@@ -32,7 +32,7 @@ export const toDicById = list => {
   return o
 }
 
-export function flatFlowObject(o: Obj<AFlow<any>>): Obj<any> {
+export function flatFlowObject(o: Obj<IAtom<any>>): Obj<any> {
   let n = {}
   Object.keys(o).forEach(k => {
     n[k] = o[k].value

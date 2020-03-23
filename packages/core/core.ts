@@ -1,4 +1,4 @@
-import { AFlow } from 'alak'
+import { IAtom } from 'alak'
 import A from 'alak'
 
 import { diamondMoment, wakeUp } from './decor'
@@ -23,13 +23,13 @@ export type ActionFnResult<T> = T extends { actions: (...args: any) => any }
   : any
 
 // export interface XModule<T> {
-//   actions(f:LaFlow<T>, a: ActionFnResult<T>):any
+//   actions(f:LIAtom<T>, a: ActionFnResult<T>):any
 // }
 
 export type ExtractClass<T> = T extends new (...args: any) => any ? InstanceType<T> : never
 type ActionKeysInClassFromObject<T> = ActionFnResult<ExtractClass<T>>
 type RemoveActionKey<T> = Omit<ExtractClass<T>, 'actions'>
-export type OnlyFlows<T> = Omit<T, 'actions'>
+export type OnlyAtoms<T> = Omit<T, 'actions'>
 export type ActionsFromClassKeysIn<T> = {
   readonly [K in keyof T]: ActionKeysInClassFromObject<T[K]>
 }
@@ -38,16 +38,16 @@ export type KeysInClassesFrom<T> = { readonly [K in keyof T]: RemoveActionKey<T[
 /**
  * @internal
  */
-export type FlowObject<T> = { readonly [K in keyof T]: AFlow<T[K]> }
-// export type FlowObject<T> = { readonly [K in keyof T]: AFlow<T[K]> }
-export type ClassKeysAsFlow<T> = { readonly [K in keyof T]: FlowObject<T[K]> }
+export type AtomsObject<T> = { readonly [K in keyof T]: IAtom<T[K]> }
+// export type FlowObject<T> = { readonly [K in keyof T]: IAtom<T[K]> }
+export type ClassKeysAsAtom<T> = { readonly [K in keyof T]: AtomsObject<T[K]> }
 
 declare type QuickModule<T> = {
   readonly [K in keyof T]: T[K]
 }
 export type ActionsFromStore<T> = T extends { actions: any } ? T['actions'] : any
 
-export type FlowsFromStore<T> = T extends { flows: any } ? T['flows'] : any
+export type AtomsFromStore<T> = T extends { atoms: any } ? T['atoms'] : any
 export type StateFromStore<T> = T extends { state: any } ? T['state'] : any
 
 
@@ -61,11 +61,11 @@ export interface La<Module, IStore> {
   /**
    * функторы потока текущего класса
    */
-  f: FlowObject<OnlyFlows<Module>>
+  a: AtomsObject<OnlyAtoms<Module>>
   /**
    * данные функторов потока текущего класса
    */
-  q: QuickModule<OnlyFlows<Module>>
+  q: QuickModule<OnlyAtoms<Module>>
   /**
    * действия доступные в хранилище
    */
@@ -73,13 +73,13 @@ export interface La<Module, IStore> {
   /**
    * потоки доступные в хранилище
    */
-  flows: FlowsFromStore<IStore>
+  atoms: AtomsFromStore<IStore>
   state: StateFromStore<IStore>
 }
 
 export interface LaSensType<T> {
   actions: ActionsFromClassKeysIn<T>
-  flows: ClassKeysAsFlow<KeysInClassesFrom<T>>
+  atoms: ClassKeysAsAtom<KeysInClassesFrom<T>>
   state: KeysInClassesFrom<T>
 }
 
@@ -89,7 +89,7 @@ export const META_CLASS = 'class'
 
 export interface ISens<T> {
   actions: ActionsFromClassKeysIn<T>
-  flows: ClassKeysAsFlow<KeysInClassesFrom<T>>
+  atoms: ClassKeysAsAtom<KeysInClassesFrom<T>>
   state: KeysInClassesFrom<T>
 
   renew(): ISens<T>
@@ -99,7 +99,7 @@ export interface ISens<T> {
 export function LaSens<T>(modules: T): ISens<T> {
   const availableModules = () => 'available modules: ' + Object.keys(sleepingModules).toString()
   const sleepingModules = {} as any
-  let awakedFlow = {}
+  let awakedAtoms = {}
   let awakedActions = {}
   let flowMap = {}
   let usedWays = {}
@@ -116,18 +116,18 @@ export function LaSens<T>(modules: T): ISens<T> {
         } else {
           let reasonExplain =
             '[' + key + '] is unavailable module, available path: ' + reasonToSleep.toString()
-          return A.canLog ? reasonExplain : alwaysErrorProxy(reasonExplain)
+          return reasonExplain // A.canLog ? reasonExplain : alwaysErrorProxy(reasonExplain)
         }
       }
       return m
     },
   }
 
-  const flows = new Proxy(awakedFlow, graphProxyHandler) as ClassKeysAsFlow<KeysInClassesFrom<T>>
+  const atoms = new Proxy(awakedAtoms, graphProxyHandler) as ClassKeysAsAtom<KeysInClassesFrom<T>>
   const actions = new Proxy(awakedActions, graphProxyHandler) as ActionsFromClassKeysIn<T>
-  const state = new Proxy(flows, stateProxyHandler())
+  const state = new Proxy(atoms, stateProxyHandler())
   const things = {
-    flows: [flows, proxyLoggerFlow],
+    atoms: [atoms, proxyLoggerFlow],
     actions: [actions, proxyLoggerAction],
     state: [state],
   } as any
@@ -136,11 +136,11 @@ export function LaSens<T>(modules: T): ISens<T> {
     let result = {} as any
     Object.keys(things).forEach(k => {
       let [thing, proxyH] = things[k]
-      if (A.canLog) {
-        result[k] = new Proxy(thing, proxyH(context))
-      } else {
+      // if (A.canLog) {
+      //   result[k] = new Proxy(thing, proxyH(context))
+      // } else {
         result[k] = thing
-      }
+      // }
     })
     return result as LaSensType<T>
   }
@@ -159,16 +159,16 @@ export function LaSens<T>(modules: T): ISens<T> {
     }
     const instance = new sleepingModule()
     const [safeModule, arousal] = diamondMoment(instance, modulePath)
-    awakedFlow[modulePath] = safeModule
+    awakedAtoms[modulePath] = safeModule
     wakeUp(arousal)
 
     console.log('✓ awake module :', modulePath)
 
     if (instance.actions) {
       let context = makeSenseFor([instance.constructor, modulePath, ...DEBUG_MODULE])
-      const f = context.flows[modulePath]
+      const a = context.atoms[modulePath]
       const q = context.state[modulePath]
-      context = Object.assign(context, { f, q })
+      context = Object.assign(context, { a, q })
       awakedActions[modulePath] = instance.actions.apply(context, [context, context])
     }
     return false
@@ -183,7 +183,7 @@ export function LaSens<T>(modules: T): ISens<T> {
 
   function renew() {
     clearObject(awakedActions)
-    clearObject(awakedFlow)
+    clearObject(awakedAtoms)
     clearObject(usedWays)
     clearObject(sleepingModules)
     storeId++
