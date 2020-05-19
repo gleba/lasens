@@ -1,6 +1,6 @@
 import { Dynamique, LaSens } from '../packages/core'
 import { IDynamique, ISens } from '../packages/core'
-import { Do } from '../lib/core/dynamique'
+import { Do } from '../packages/core/dynamique'
 
 class SessionController {
   score = 0
