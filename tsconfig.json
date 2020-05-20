@@ -9,5 +9,18 @@
     "outDir": "../lib"
   },
 
-  "exclude": ["node_modules", "tests"]
+  "exclude": ["node_modules", "tests"],
+  "include": [
+    "packages/store/global.d.ts"
+  ],
+  "typeAcquisition": {
+    "enable": true,
+    "include": [
+      "packages/store/global.d.ts"
+    ]
+  },
+  "files": [
+    "packages/store/global.d.ts"
+  ]
 }
+

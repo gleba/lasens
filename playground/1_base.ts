@@ -1,4 +1,4 @@
-import { Atomic, Store, Thing } from '../packages/store'
+import {Store, Thing } from '../packages/store'
 
 class Fist extends Store<Fist> {
   someVar = 0
@@ -16,7 +16,9 @@ const second = Thing(
     someVar = 0
     someVar2 = 0
     someAction() {}
-    _constructor(a: Atomic<X>, $?: Link<Domain>) {}
+    _constructor(a: Atomic<X>, $?) {
+
+    }
     _decay() {}
   }
 ).muiltiStore.create()

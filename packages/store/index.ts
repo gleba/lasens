@@ -5,7 +5,6 @@ import { type } from 'os'
 // export type ActionsFrom<T> = T extends { actions: any } ? T['actions'] : any
 // type DomainActions<D> = { [K in keyof D]: ActionsFrom<D[K]> }
 // type DomainAtoms<D> = { [K in keyof D]: AtomsFrom<D[K]> }
-//
 
 interface IStore<Thing, IDomain> {
   _constructor?(a: Atomic<Thing>): void

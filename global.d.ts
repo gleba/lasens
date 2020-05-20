@@ -1,25 +1,29 @@
+
+
 type FilterFlags<T, Condition> = {
   [Key in keyof T]: T[Key] extends Condition ? Key : never
 }
 
 type AllowedNames<T, Condition> = FilterFlags<T, Condition>[keyof T]
-type Clearify<T> = Omit<
-  Omit<
-    Omit<
-      Omit<Omit<Omit<Omit<Omit<T, '$'>, '$a'>, '_constructor'>, '$id'>, '$uid'>,
-      '$atoms'
-    >,
-    '$actions'
-  >,
-  '$object'
->
+type Hidden = {
+  $:any
+  $atoms:any
+  $actions:any
+  $uid:any
+  $id:any
+  $object:any
+  _constructor: any
+  _decay: any
+}
+
+type Clarify<T> = Omit<T, keyof Hidden>
 type Atomize<T> = { readonly [K in keyof T]: T[K] }
-type Atomic<T> = Atomize<RmFunc<T>>
+declare type Atomic<T> = Atomize<RmFunc<T>>
 
 type RmType<T, Condition> = Omit<T, AllowedNames<T, Condition>>
 type PickType<T, Condition> = Pick<T, AllowedNames<T, Condition>>
-type RmFunc<T> = RmType<Clearify<T>, Func>
-type OnlyFunc<T> = PickType<Clearify<T>, Func>
+type RmFunc<T> = RmType<Clarify<T>, Func>
+type OnlyFunc<T> = PickType<Clarify<T>, Func>
 type Func = (...args: any) => any
 
 type AtomsFrom<T> = T extends { atoms: any } ? T['atoms'] : any

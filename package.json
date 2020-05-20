@@ -3,7 +3,8 @@
   "version": "0.2.0-next.0",
   "description": "La Sens Store",
   "main": "lib/core/index.js",
-  "typings": "lib/core/index.d.ts",
+
+  "typings": "global.d.ts",
   "keywords": [],
   "author": "Gleb Panteleev <dev@gleb.pw> (http://gleb.pw/)",
   "license": "MIT",

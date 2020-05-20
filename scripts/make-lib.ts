@@ -8,9 +8,9 @@ export const tsc = async () => {
   info('compiling typescript packages...')
   rm('lib')
   const tsconfig = path.join('packages', 'tsconfig.json')
-  const gts = path.join('packages', 'index.d.ts')
+  const gts = path.join('packages', 'global.d.ts')
   copyFileSync('tsconfig.json', tsconfig)
-  copyFileSync('index.d.ts', gts)
+  copyFileSync('global.d.ts', gts)
   await executeCommand(
     'node ' + path.resolve('node_modules/typescript/lib/tsc'),
     path.resolve('packages')
