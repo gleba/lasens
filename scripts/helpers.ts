@@ -25,9 +25,9 @@ export const executeCommand = (command, cwd) =>
       if (error) {
         log(chalk.grey('Error:'), chalk.yellow(cwd))
         log(chalk.redBright(error))
-        process.exit()
+        // process.exit()
       }
-      // log(chalk.gray(stdout))
+      log(chalk.gray(stdout))
       log(chalk.green('done'), chalk.grey(command))
       done()
     })

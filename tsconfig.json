@@ -1,26 +1,30 @@
 {
   "compilerOptions": {
-    "lib": ["ES2017", "DOM"],
+//    "lib": ["ES2017", "DOM"],
     "module": "commonjs",
     "target": "es6",
+    "outDir": "dist",
     "declaration": true,
     "experimentalDecorators": true,
-    //    "noImplicitAny": false,
-    "outDir": "../lib"
-  },
+    "esModuleInterop": true,
+    "sourceMap": false,
+    "rootDir": ".",
+    "baseUrl": ".",
 
-  "exclude": ["node_modules", "tests"],
-  "include": [
-    "packages/store/global.d.ts"
-  ],
-  "typeAcquisition": {
-    "enable": true,
-    "include": [
-      "packages/store/global.d.ts"
+    "paths": {
+      "@la/*": ["packages/*/src"],
+      "lasens": ["packages/core/src"]
+    },
+    "types": ["node"],
+    "typeRoots" : [
+      "packages/global.d.ts"
     ]
   },
-  "files": [
-    "packages/store/global.d.ts"
+  "include": [
+    "packages/global.d.ts",
+    "packages/global.d.ts",
+    "packages/*/src",
+    "packages/*/__tests__"
   ]
 }
 
