@@ -25,7 +25,6 @@ export const tsc = async () => {
   let globalTDS = readFileSync(path.resolve('packages/global.d.ts')).toString()
   const defPacks = {}
   const readDef = (p, name) =>{
-    console.log("-", p, name)
     let fp = path.join(p, name)
     let stat = statSync(fp)
     if (stat.isDirectory()){
@@ -35,6 +34,7 @@ export const tsc = async () => {
         let pakName = p.split(`dist${path.sep}packages`)[1].split(path.sep)[1]
         if (!defPacks[pakName]) defPacks[pakName] = []
         defPacks[pakName].push(readFileSync(fp).toString())
+        console.log("+/-", pakName, name)
         rm(fp)
       }
     }
@@ -42,20 +42,18 @@ export const tsc = async () => {
   readdirSync(distPath).forEach(f=>readDef(distPath, f))
   for (let key in defPacks) {
     let defs = defPacks[key]
+    let indexDTS = readFileSync(path.resolve(`packages/${key}/index.d.ts`)).toString()
 
-    globalTDS = globalTDS + `\ndeclare module "@la/${key}" {`
+    writeFileSync(path.join(distPath, "packages", key, "global.d.ts"), globalTDS + indexDTS)
+    let locDTS = `/// <reference path="global.d.ts" />" {`
     defs.forEach(d=>{
-      d = d.replace(/export declare /g, "export ")
-      globalTDS = globalTDS + "\n" + d
+      // d = d.replace(/export declare /g, "export ")
+      locDTS = locDTS + "\n" + d
     })
-    globalTDS = globalTDS + "\n}"
-    console.log({ defs })
-    console.log({ key })
 
+    writeFileSync(path.join(distPath, "packages", key, "index.d.ts"), locDTS)
+    console.log(`defs for ${key} are ready`)
   }
-  writeFileSync(path.join(distPath, "packages", "global.d.ts"), globalTDS)
-
-
 }
 tsc()
 

@@ -5,15 +5,29 @@ export abstract class DomainStore<Thing, IDomain> implements ILaSensStore<Thing,
   $uid: string | number
   $id?: string | number
   $object?: any
-  abstract _constructor(a: ThinkOf<Thing>, $?: LinksTo<Domain>): void
+
 }
 
 export abstract class Store<Thing> extends DomainStore<Thing, Domain> {}
 
 
-export function Thing<T>(className: T):ThingConstructor<T> {
+export function MakeThing<T>(className: T):ThingConstructor<T> {
   return null as ThingConstructor<T>
 }
 export interface Domain {
 
 }
+
+
+MakeThing(class Z extends Store<Z>{
+  ok:number
+  _constructor(a: ThinkOf<Z>) {
+
+  }
+})
+  .lifeCycle({
+    decayByInactivity:true
+  })
+  .domain("x")
+  .multiStartUp()
+

@@ -17,12 +17,12 @@
     },
     "types": ["node"],
     "typeRoots" : [
-      "packages/global.d.ts"
+      "packages/store/global.d.ts"
     ]
   },
   "include": [
     "packages/global.d.ts",
-    "packages/global.d.ts",
+    "packages/*/index.d.ts",
     "packages/*/src",
     "packages/*/__tests__"
   ]
