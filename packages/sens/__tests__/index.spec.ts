@@ -1,9 +1,7 @@
-import { MakeThing, Store } from '@la/store'
+import { MakeThing, Store } from '@la/sens'
 
 describe('make things', () => {
   test('class things', () => {
-    console.log("-")
-
-
+    console.log('-')
   })
 })

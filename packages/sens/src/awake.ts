@@ -33,11 +33,10 @@ export function getup(way, id?, target?) {
   body.$actions = domainActions
   body.$atoms = domainAtoms
   if (target) body.$target = target
-  const proxy = proxyBody(body, proxyAtoms, sens.actions)
+  proxyBody(body, proxyAtoms, sens.actions)
   const { _start } = body
-
   _start && _start(proxyAtoms, domainLink)
-  return proxy
+  return new Proxy({ body, proxyAtoms }, publicProxyHandlers)
 }
 
 function proxyBody(body, atoms, actions) {
@@ -46,7 +45,6 @@ function proxyBody(body, atoms, actions) {
     Object.keys(actions).forEach(key => {
       body[key] = actions[key].bind(proxy)
     })
-  return proxy
 }
 
 export const addAtom = (key, body: any, domain?, value?) => {
@@ -89,11 +87,16 @@ function getSens(thing: any, domain) {
   }
 }
 
+const publicProxyHandlers = {
+  get({ body, proxyAtoms }, key) {
+    return body[key] || proxyAtoms[key]
+  },
+}
 const bodyProxyHandlers = {
   get({ body, atoms }, key) {
     if (key[0] === '$') return body[key]
     const a = body[key] || atoms[key]
-    return a.value
+    return a._ ? a.value : a
   },
   set({ body, atoms }, key, value) {
     const a = body[key] || atoms[key]

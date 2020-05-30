@@ -11,11 +11,9 @@ import * as path from 'path'
 import { exec, execSync, fork } from 'child_process'
 import { mkdirSync, readdirSync, renameSync, rmdirSync } from 'fs'
 import { info, log0, rm, prepare, executeCommand } from './helpers'
-import { tsc } from './make-lib'
+import { makeLib } from './make-lib'
 const chalk = require('chalk')
 const { log } = console
-
-
 
 const dirName = 'TEMPleDocs'
 const homeDir = path.resolve('.')
@@ -24,7 +22,8 @@ const extractor = 'extractor'
 const documenter = 'documenter'
 const cfgFile = 'api-extractor.json'
 
-const getModuleStartPath = name => `node_modules/@microsoft/api-${name}/lib/start.js`
+const getModuleStartPath = name =>
+  `node_modules/@microsoft/api-${name}/lib/start.js`
 async function checkModule(name) {
   const modulePath = getModuleStartPath(name)
   if (!existsSync(modulePath)) {
@@ -44,7 +43,10 @@ async function extractApi(name) {
   config.docModel.apiJsonFilePath = outFilePath
   writeJSONSync(path.join(cwd, cfgFile), config)
   log0(`extract ${name} api..`)
-  await executeCommand(`node ../../${getModuleStartPath(extractor)} run -c ${cfgFile}`, cwd)
+  await executeCommand(
+    `node ../../${getModuleStartPath(extractor)} run -c ${cfgFile}`,
+    cwd
+  )
   const api = readJSONSync(path.join(cwd, outFilePath))
   api.name = name
   writeJSONSync(path.join(cwd, outFilePath), api)
@@ -52,12 +54,23 @@ async function extractApi(name) {
 }
 
 async function make() {
-  await Promise.all([checkModule(extractor), checkModule(documenter), tsc()])
+  await Promise.all([
+    checkModule(extractor),
+    checkModule(documenter),
+    makeLib(),
+  ])
   info('extract api...')
   prepare(workDir)
-  await Promise.all([extractApi('core'), extractApi('react'), extractApi('vue')])
+  await Promise.all([
+    extractApi('core'),
+    extractApi('react'),
+    extractApi('vue'),
+  ])
   info('making documentation...')
-  await executeCommand(`node ../${getModuleStartPath(documenter)} markdown`, workDir)
+  await executeCommand(
+    `node ../${getModuleStartPath(documenter)} markdown`,
+    workDir
+  )
   log0('cleaning working directory')
   rm('docs')
   renameSync(path.resolve(workDir, 'markdown'), 'docs')

@@ -31,24 +31,25 @@ type LasFilterFlags<T, Condition> = {
 type LasAllowedNames<T, Condition> = LasFilterFlags<T, Condition>[keyof T]
 type LasHiddenSens = {
   $?: any
+  $target: any
   $atoms?: any
   $actions?: any
   $uid?: any
   $id?: any
-  $target?: any
   _start?: AnyFunction
   _decay?: AnyFunction
 }
 
 type LasClarify<T> = Omit<T, keyof LasHiddenSens>
 type LasAtomized<T> = { readonly [K in keyof T]: IAtom<T[K]> }
+
 declare type ThinkOf<T> = LasAtomized<RmFunc<T>>
 
 type RmType<T, Condition> = Omit<T, LasAllowedNames<T, Condition>>
 type PickType<T, Condition> = Pick<T, LasAllowedNames<T, Condition>>
 type RmFunc<T> = RmType<LasClarify<T>, Func>
 type OnlyFunc<T> = PickType<LasClarify<T>, Func>
-type Func = (...args: any) => any
+type Func = (args: any) => any
 
 type LasAtomsFrom<T> = T extends { atoms: any } ? T['atoms'] : any
 type LasActionsFrom<T> = T extends { actions: any } ? T['actions'] : any
@@ -92,3 +93,5 @@ interface ThingConstructor<X> extends LifeCycle<X>, TCStep<X> {}
 type StyledThing<T> = T extends ClassInstance ? ClassToKV<T> : T
 
 type Thing<X> = ThingConstructor<StyledThing<X>>
+
+type XT<X> = OnlyFunc<StyledThing<X>>

@@ -32,10 +32,12 @@ switch (task) {
     chokidar.watch('./make/').on('all', (event, path) => {
       clearInterval(t)
       t = setTimeout(() => {
-        executeCommand('node make')
+        executeCommand('node make publish sens')
       }, 100)
     })
-    require('./make/dev-script')
+    break
+  case 'publish':
+    require('./publish').publish(process.argv[3])
     break
   default:
     require('./make-lib')

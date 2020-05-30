@@ -1,5 +1,5 @@
-import { MakeThing, Store } from '../packages/store/src'
-import { changeFx, qubit, stored } from '../packages/store/src/decor'
+import { MakeThing, Store } from '../packages/sens/src'
+import { changeFx, qubit, stored } from '../packages/sens/src/decor'
 
 class X extends Store<X> {
   // name: string
@@ -17,11 +17,13 @@ class X extends Store<X> {
 
     // console.log(this.$.yes.value)
   }
+  ok() {
+    console.log('ok')
+    return 0
+  }
 }
 // const classStore = MakeThing(X).domain('x').register()
+const cms = MakeThing(X).domain('z').register()
+// let cms: XT<X>
 
-// const cms = MakeThing(X).domain('z').multiRegister()
-const cms = MakeThing(X).domain('z').multiRegister()
-// console.log({ cms })
-
-console.log('age', cms(2).age)
+cms.ok()
