@@ -15,16 +15,17 @@
       "@la/*": ["packages/*/src"],
       "lasens": ["packages/core/src"]
     },
-    "types": ["node"],
+    "types": ["node", "alak"],
     "typeRoots" : [
-      "packages/store/global.d.ts"
+      "packages/store/index.d.ts"
     ]
   },
   "include": [
-    "packages/global.d.ts",
+    "packages/store/index.d.ts",
     "packages/*/index.d.ts",
     "packages/*/src",
-    "packages/*/__tests__"
+    "packages/*/__tests__",
+    "node_modules/@types/jest/index.d.ts"
   ]
 }
 
