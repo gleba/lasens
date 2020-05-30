@@ -48,8 +48,6 @@ const decorBase = (decor: Decor) => (
   target: Object,
   propertyKey: string | symbol
 ) => {
-  console.log('add decor', target.constructor, propertyKey)
-
   addMeta(decor, target.constructor, propertyKey)
 }
 
@@ -65,17 +63,12 @@ const delay = [] as any[]
 const getDecors = classCon =>
   decorModuleMap.has(classCon) ? decorModuleMap.get(classCon) : {}
 
-const mergeKeys = (o1, o2) =>
-  Object.keys(o1).concat(Object.keys(o2).filter(k => !o1[k]))
-
-export function decorate(body, classCon, domain?) {
+export function decorate(proxyAtoms, classCon) {
   const decors = getDecors(classCon)
-
   Object.keys(decors).forEach(key => {
     const decor = decors[key]
     if (decor[Decor.Stored]) {
-      let atom = body[key] || addAtom(key, body, domain)
-      XStorage.bindFlow(atom)
+      XStorage.bindFlow(proxyAtoms[key])
     }
   })
 }

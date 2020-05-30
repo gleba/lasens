@@ -13,15 +13,16 @@ switch (task) {
     require('./make-docs')
     break
   case 'dev':
-    chokidar
-      .watch(['./packages', './make/'])
-      .on('all', (event, path) => {
-        clearInterval(t)
-        t = setTimeout(() => {
-          console.log(Date.now())
-          executeCommand('node make play')
-        }, 100)
-      })
+    chokidar.watch(['./packages', './make/']).on('all', (event, path) => {
+      clearInterval(t)
+      t = setTimeout(() => {
+        console.log('\n\n\n\n')
+        console.clear()
+        console.log('--------------------------------------------')
+        console.log(Date.now())
+        executeCommand('node make play')
+      }, 100)
+    })
     break
   case 'play':
     require('./playground')

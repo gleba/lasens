@@ -13,8 +13,8 @@ type HiddenAtomProps = {
 }
 
 interface ILaSensStore<Thing, IDomain> {
-  _constructor?(a: ThinkOf<Thing>): void
-  _constructor?(a: ThinkOf<Thing>, $?: LinksTo<IDomain>): void
+  _start?($: ThinkOf<Thing>): void
+  _start?($: ThinkOf<Thing>, link?: LinksTo<IDomain>): void
   _decay?(): void
   readonly $: ThinkOf<Thing>
   readonly $atoms: DomainAtoms<IDomain>
@@ -35,13 +35,13 @@ type LasHiddenSens = {
   $actions?: any
   $uid?: any
   $id?: any
-  $object?: any
-  _start?: any
-  _decay?: any
+  $target?: any
+  _start?: AnyFunction
+  _decay?: AnyFunction
 }
 
 type LasClarify<T> = Omit<T, keyof LasHiddenSens>
-type LasAtomized<T> = { readonly [K in keyof T]: PublicAtom<T[K]> }
+type LasAtomized<T> = { readonly [K in keyof T]: IAtom<T[K]> }
 declare type ThinkOf<T> = LasAtomized<RmFunc<T>>
 
 type RmType<T, Condition> = Omit<T, LasAllowedNames<T, Condition>>

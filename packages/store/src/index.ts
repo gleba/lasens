@@ -1,5 +1,5 @@
 /// <reference path="../index.d.ts"/>
-import { awake, multiWake } from './awake'
+import { awake, getup } from './awake'
 
 export interface Domain {}
 
@@ -10,7 +10,7 @@ export abstract class DomainStore<Thing, IDomain>
   $actions: DomainActions<IDomain>
   $uid: string | number
   $id?: string | number
-  $object?: any
+  $target?: any
 }
 
 export abstract class Store<Thing> extends DomainStore<Thing, Domain> {}
@@ -78,7 +78,9 @@ function multiRegister(way: IWay) {
       }
     }
     if (activites.has(key)) return activites.get(key)
-    let activity = multiWake(way, key, target)
+    let activity = getup(way, key, target)
+    activites.set(key, activity)
+    return activity
   }
   getter.remove = () => {}
   getter.broadcast = () => {}
