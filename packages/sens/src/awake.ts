@@ -35,7 +35,14 @@ export function getup(way, id?, target?) {
   if (target) body.$target = target
   proxyBody(body, proxyAtoms, sens.actions)
   const { _start } = body
-  _start && _start(proxyAtoms, domainLink)
+  _start && _start({
+    $:body,
+    _: new Proxy({body:sens.privateAtoms, domain}, atomsProxyHandler),
+    id:body.$id,
+    uid:body.$uid,
+    atoms:domainAtoms,
+    actions:domainActions
+  })
   return new Proxy({ body, proxyAtoms }, publicProxyHandlers)
 }
 
@@ -54,14 +61,28 @@ export const addAtom = (key, body: any, domain?, value?) => {
   body[key] = atom
   return atom
 }
+function privateSens(instance,domain) {
+  const atoms = {}
+  const { _private } = instance
+  if (_private) {
+    let privateDomain = `${domain}.private`
+    Object.keys(_private).forEach(key =>
+      addAtom(key, atoms, domain, _private[key])
+    )
+    delete instance._private
+  }
+  return atoms
+}
 function getSens(thing: any, domain) {
-  const atoms = {},
+  const
+    atoms = {},
     actions = {}
-  let instance
+  let instance, privateAtoms
   let isClass = false
   if (typeof thing === 'function') {
     instance = new thing()
     isClass = true
+    privateAtoms = privateSens(instance, domain)
     let protoOfInstance = Object.getPrototypeOf(instance)
     let methods = Object.getOwnPropertyNames(protoOfInstance)
     methods.shift()
@@ -72,7 +93,7 @@ function getSens(thing: any, domain) {
       addAtom(key, atoms, domain, instance[key])
     )
   } else {
-    instance = thing
+    privateAtoms = privateSens(instance, thing)
     Object.keys(thing).forEach(key => {
       let value = thing[key]
       if (typeof value === 'function') actions[key] = value
@@ -83,6 +104,7 @@ function getSens(thing: any, domain) {
   return {
     isClass,
     actions,
+    privateAtoms,
     atoms,
   }
 }

@@ -7,7 +7,7 @@ let isBrowser = new Function(
 let isServer = !isBrowser()
 
 export const XStorage = {
-  bindFlow(atom: IAtom<any>) {
+  init(atom: IAtom<any>) {
     if (isServer) return false
     let v = localStorage.getItem(atom.id)
     if (v && v != 'undefined') {

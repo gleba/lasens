@@ -1,4 +1,4 @@
-import { MakeThing, Store } from '../packages/sens/src'
+import { Domain, MakeThing, Store } from '../packages/sens/src'
 import { changeFx, qubit, stored } from '../packages/sens/src/decor'
 
 class X extends Store<X> {
@@ -9,21 +9,22 @@ class X extends Store<X> {
 
   @stored age: number
 
-  _start($: ThinkOf<X>, link) {
-    // console.log('_start', { $ })
-    // console.log('yes.value', $.yes.value)
-    // $.age(5)
-    this.age = 5
-
-    // console.log(this.$.yes.value)
+  _private =  {
+    mem:5
   }
+  _start({ _, $ }: LinkedThinkOf<X, Domain>) {
+    $.age(_.mem.value)
+  }
+
   ok() {
-    console.log('ok')
+    console.log('ok', this.age)
     return 0
   }
 }
 // const classStore = MakeThing(X).domain('x').register()
-const cms = MakeThing(X).domain('z').register()
+const cms = MakeThing(X).domain('x').register()
 // let cms: XT<X>
-
 cms.ok()
+
+console.log(cms.age.value)
+

@@ -10,6 +10,7 @@ enum Decor {
   LazyGetter = 'lazyGetter',
   Wrapper = 'wrapper',
   Change = 'change',
+  Atom = 'atom',
 }
 const decorModuleMap = new Map()
 
@@ -56,6 +57,7 @@ export const lazyGetter = decorFx(Decor.LazyGetter)
 export const wrapper = decorFx(Decor.Wrapper)
 export const changeFx = decorFx(Decor.Change)
 export const stored = decorBase(Decor.Stored)
+export const atom = decorBase(Decor.Atom)
 export const qubit = decorBase(Decor.Alive)
 export const holistic = decorBase(Decor.Alive)
 const delay = [] as any[]
@@ -63,12 +65,18 @@ const delay = [] as any[]
 const getDecors = classCon =>
   decorModuleMap.has(classCon) ? decorModuleMap.get(classCon) : {}
 
+
+const decorImplement = {
+  [Decor.Stored]: (p, k)=>XStorage.init(p[k]),
+  [Decor.Atom]: (p,k)=> p[k]
+}
+
 export function decorate(proxyAtoms, classCon) {
   const decors = getDecors(classCon)
   Object.keys(decors).forEach(key => {
     const decor = decors[key]
     if (decor[Decor.Stored]) {
-      XStorage.bindFlow(proxyAtoms[key])
+      XStorage.init(proxyAtoms[key])
     }
   })
 }

@@ -3,23 +3,24 @@ import { awake, getup } from './awake'
 
 export interface Domain {}
 
+
 export abstract class DomainStore<Thing, IDomain>
   implements ILaSensStore<Thing, Domain> {
-  $: ThinkOf<Thing>
-  $atoms: DomainAtoms<IDomain>
-  $actions: DomainActions<IDomain>
-  $uid: string | number
+
+  _decay?(): void
+  _?: LasPrivateFrom<Thing>
+  _private: PrivateFlow
+  $: LasAtomized<RmFunc<Thing>>
+  $atoms?: DomainAtoms<IDomain>
+  $actions?: DomainActions<IDomain>
+  $uid?: string | number
   $id?: string | number
-  $target?: any
+  $object?: any
+
 }
 
 export abstract class Store<Thing> extends DomainStore<Thing, Domain> {}
 
-// export function MakeThing<T>(someThing: T): ThingConstructor<T> {
-//   if (someThing.constructor)
-//     return makeClassThing(someThing) as ThingConstructor<T>
-//   throw 'unsupported thing'
-// }
 
 export interface IWay {
   thing: any
@@ -61,7 +62,7 @@ export interface IBox {
 }
 
 function multiRegister(way: IWay) {
-  const activites = new Map()
+  const activities = new Map()
   function getter(target) {
     let id, key
     let uid = Math.random()
@@ -77,9 +78,9 @@ function multiRegister(way: IWay) {
           if (target.id) key = target.id
       }
     }
-    if (activites.has(key)) return activites.get(key)
+    if (activities.has(key)) return activities.get(key)
     let activity = getup(way, key, target)
-    activites.set(key, activity)
+    activities.set(key, activity)
     return activity
   }
   getter.remove = () => {}

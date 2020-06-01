@@ -2,7 +2,21 @@
 type ClassInstance = new (...args: any) => any
 type ClassToKV<T> = T extends ClassInstance ? InstanceType<T> : never
 
-type PublicAtom<T> = Omit<IAtom<T>, keyof HiddenAtomProps>
+type PublicFlow<T> = Omit<IAtom<T>, keyof HiddenAtomProps>
+type NoFunctionValue =
+  boolean
+  | string
+  | number
+  | null
+  | undefined
+  | NoFunctionObject
+
+interface NoFunctionObject {
+  [key: string]: NoFunctionValue
+}
+
+type PrivateFlow = ClassInstance | NoFunctionObject
+
 type HiddenAtomProps = {
   addMeta: any
   getMeta: any
@@ -13,15 +27,8 @@ type HiddenAtomProps = {
 }
 
 interface ILaSensStore<Thing, IDomain> {
-  _start?($: ThinkOf<Thing>): void
-  _start?($: ThinkOf<Thing>, link?: LinksTo<IDomain>): void
+  _start?(ln: LinkedThinkOf<Thing, IDomain>): void
   _decay?(): void
-  readonly $: ThinkOf<Thing>
-  readonly $atoms: DomainAtoms<IDomain>
-  readonly $actions: DomainActions<IDomain>
-  readonly $uid: string | number
-  readonly $id?: string | number
-  readonly $object?: any
 }
 
 type LasFilterFlags<T, Condition> = {
@@ -31,6 +38,7 @@ type LasFilterFlags<T, Condition> = {
 type LasAllowedNames<T, Condition> = LasFilterFlags<T, Condition>[keyof T]
 type LasHiddenSens = {
   $?: any
+  _?: any
   $target: any
   $atoms?: any
   $actions?: any
@@ -38,12 +46,16 @@ type LasHiddenSens = {
   $id?: any
   _start?: AnyFunction
   _decay?: AnyFunction
+  _private:any
 }
 
 type LasClarify<T> = Omit<T, keyof LasHiddenSens>
 type LasAtomized<T> = { readonly [K in keyof T]: IAtom<T[K]> }
 
-declare type ThinkOf<T> = LasAtomized<RmFunc<T>>
+declare type LinkedThinkOf<T, D> = {
+  $:LasAtomized<RmFunc<T>>
+  _:LasPrivateFrom<T>
+} & LinksTo<D>
 
 type RmType<T, Condition> = Omit<T, LasAllowedNames<T, Condition>>
 type PickType<T, Condition> = Pick<T, LasAllowedNames<T, Condition>>
@@ -53,6 +65,7 @@ type Func = (args: any) => any
 
 type LasAtomsFrom<T> = T extends { atoms: any } ? T['atoms'] : any
 type LasActionsFrom<T> = T extends { actions: any } ? T['actions'] : any
+type LasPrivateFrom<T> = T extends { _private: any } ? LasAtomized<StyledThing<T['_private']>> : any
 type DomainActions<D> = { [K in keyof D]: LasActionsFrom<D[K]> }
 type DomainAtoms<D> = { [K in keyof D]: LasAtomsFrom<D[K]> }
 
@@ -61,7 +74,7 @@ interface LinksTo<D> {
   uid: number
   atoms: DomainAtoms<D>
   actions: DomainActions<D>
-  object?: any
+  target?: any
 }
 
 type AtomizedSingleThing<X> = LasAtomized<RmFunc<X>> & OnlyFunc<X>
@@ -77,6 +90,7 @@ interface LifeCycleOption {
   decayByInactivity?: boolean
   decayDelay?: number
 }
+
 interface LifeCycle<X> extends TCStep<X> {
   lifeCycle(options: LifeCycleOption): TCStep<X>
 }
