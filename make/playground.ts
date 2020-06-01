@@ -12,19 +12,26 @@ class X extends Store<X> {
   _private =  {
     mem:5
   }
-  _start({ _, $ }: LinkedThinkOf<X, Domain>) {
-    $.age(_.mem.value)
+  // _start({ _, $ }: LinkedThinkOf<X, Domain>) {
+  //   $.age(_.mem.value)
+  // }
+  //
+  ok() {
+    console.log('ok')
+    return 0
   }
 
-  ok() {
-    console.log('ok', this.age)
-    return 0
+  get okg(){
+    // console.log("--get-|",this.yes +"|")
+    console.log( this._)
+    return "-"
   }
 }
 // const classStore = MakeThing(X).domain('x').register()
 const cms = MakeThing(X).domain('x').register()
 // let cms: XT<X>
-cms.ok()
+// cms.ok()
 
-console.log(cms.age.value)
+
+console.log(cms.okg)
 

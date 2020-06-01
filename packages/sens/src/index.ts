@@ -15,7 +15,7 @@ export abstract class DomainStore<Thing, IDomain>
   $actions?: DomainActions<IDomain>
   $uid?: string | number
   $id?: string | number
-  $object?: any
+  $target?: any
 
 }
 

@@ -32,12 +32,12 @@ export function getup(way, id?, target?) {
   body.$id = id || way.domain || body.$uid
   body.$actions = domainActions
   body.$atoms = domainAtoms
+  body._ = new Proxy({body:sens.privateAtoms, domain}, atomsProxyHandler)
   if (target) body.$target = target
-  proxyBody(body, proxyAtoms, sens.actions)
+  proxyBody(body, proxyAtoms, sens.actions, sens.propDesk)
   const { _start } = body
   _start && _start({
     $:body,
-    _: new Proxy({body:sens.privateAtoms, domain}, atomsProxyHandler),
     id:body.$id,
     uid:body.$uid,
     atoms:domainAtoms,
@@ -46,12 +46,19 @@ export function getup(way, id?, target?) {
   return new Proxy({ body, proxyAtoms }, publicProxyHandlers)
 }
 
-function proxyBody(body, atoms, actions) {
+function proxyBody(body, atoms, actions, desk) {
   const proxy = new Proxy({ body, atoms }, bodyProxyHandlers)
   actions &&
     Object.keys(actions).forEach(key => {
       body[key] = actions[key].bind(proxy)
     })
+  desk && Object.keys(desk).forEach(key=>{
+    let dp = desk[key]
+    Object.defineProperty(body, key, {
+      get:dp.get && dp.get.bind(proxy),
+      set:dp.set && dp.set.bind(proxy),
+    } as any)
+  })
 }
 
 export const addAtom = (key, body: any, domain?, value?) => {
@@ -73,9 +80,12 @@ function privateSens(instance,domain) {
   }
   return atoms
 }
+const NaF = f => typeof f === 'function'
+
 function getSens(thing: any, domain) {
   const
     atoms = {},
+    propDesk = {} as KV<PropertyDescriptor>,
     actions = {}
   let instance, privateAtoms
   let isClass = false
@@ -85,9 +95,16 @@ function getSens(thing: any, domain) {
     privateAtoms = privateSens(instance, domain)
     let protoOfInstance = Object.getPrototypeOf(instance)
     let methods = Object.getOwnPropertyNames(protoOfInstance)
+
+
     methods.shift()
     methods.forEach(key => {
-      actions[key] = instance[key]
+      let opd = Object.getOwnPropertyDescriptor(protoOfInstance, key)
+      if (opd.get || opd.set) {
+        propDesk[key] = opd
+      } else {
+        actions[key] = opd.get ? ()=>opd.get() : instance[key]
+      }
     })
     Object.keys(instance).forEach(key =>
       addAtom(key, atoms, domain, instance[key])
@@ -104,6 +121,7 @@ function getSens(thing: any, domain) {
   return {
     isClass,
     actions,
+    propDesk,
     privateAtoms,
     atoms,
   }
