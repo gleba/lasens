@@ -21,7 +21,7 @@ export function awake(box: IBox) {
 }
 
 export function getup(way, id?, target?) {
-  const domain = id ? way.domain + '.' + id : way.domain
+  const domain = (id ? way.domain + '.' + id : way.domain) || ".."
   const { thing } = way
   const sens = getSens(thing, domain)
   const body = { ...sens.atoms } as LasHiddenSens
@@ -37,7 +37,8 @@ export function getup(way, id?, target?) {
   proxyBody(body, proxyAtoms, sens.actions, sens.propDesk)
   const { _start } = body
   _start && _start({
-    $:body,
+    $:body.$,
+    _:body._,
     id:body.$id,
     uid:body.$uid,
     atoms:domainAtoms,

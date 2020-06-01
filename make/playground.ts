@@ -12,9 +12,12 @@ class X extends Store<X> {
   _private =  {
     mem:5
   }
-  // _start({ _, $ }: LinkedThinkOf<X, Domain>) {
-  //   $.age(_.mem.value)
-  // }
+  _start({ _, $ }: LinkedThinkOf<X, Domain>) {
+    $.age.up(x=>{
+      console.log("::",x)
+    })
+    $.age(_.mem.value)
+  }
   //
   ok() {
     console.log('ok')
