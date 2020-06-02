@@ -3,21 +3,22 @@ import { executeCommand } from './helpers'
 import { makeLib } from './make-lib'
 
 export async function publish(name) {
-  // console.log('____', name)
+  const sourcePath = `./packages/${name}/package.json`
   const packageJSON = JSON.parse(
-    readFileSync(`./packages/${name}/package.json`, 'utf-8')
+    readFileSync(sourcePath, 'utf-8')
   )
-
-  if (packageJSON.version) {
-    await makeLib()
-    packageJSON.version
-  } else {
-    throw 'wrong name in package.json'
+  let v = await executeCommand(`npm show ${packageJSON.name} version`)
+  const remoteVer = v.toString().split('\n').shift()
+  const newVerParts = remoteVer.split(".")
+  let step = newVerParts.length-1
+  newVerParts[step] = (parseInt(newVerParts[step])+1).toString()
+  const newVer = newVerParts.join(".")
+  if (packageJSON.version != newVer) {
+    packageJSON.version = newVer
+    writeFileSync(sourcePath, JSON.stringify(packageJSON, null, 4))
   }
 
-  const versionParts = packageJSON.version.split('.')
-  versionParts.push(parseInt(versionParts.pop()) + 1)
-  packageJSON.version = versionParts.join('.')
+  await makeLib()
   writeFileSync(
     `./dist/packages/${name}/package.json`,
     JSON.stringify(packageJSON, null, 2)

@@ -1,6 +1,7 @@
 import { existsSync } from 'fs-extra'
 import { mkdirSync, rmdirSync } from 'fs'
 import { exec } from 'child_process'
+import * as path from 'path'
 
 const chalk = require('chalk')
 const { log } = console
@@ -19,7 +20,7 @@ export const rm = name =>
     recursive: true,
   })
 
-export const executeCommand = (command, cwd) =>
+export const executeCommand = (command, cwd = path.resolve(__dirname)) =>
   new Promise(async done => {
     exec(command, { cwd: cwd }, (error, stdout) => {
       if (error) {
@@ -29,6 +30,6 @@ export const executeCommand = (command, cwd) =>
       }
       log(chalk.gray(stdout))
       log(chalk.green('done'), chalk.grey(command))
-      done()
+      done(stdout)
     })
   })
