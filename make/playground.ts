@@ -1,7 +1,7 @@
-import { Domain, MakeThing, Store } from '../packages/sens/src'
+import { LasDomain, MakeThing, Sens } from '../packages/sens/src'
 import { changeFx, qubit, stored } from '../packages/sens/src/decor'
 
-class X extends Store<X> {
+class X extends Sens<X> {
   // name: string
   // count = 1
 
@@ -12,7 +12,10 @@ class X extends Store<X> {
   _private =  {
     mem:5
   }
-  _start({ _, $ }: LinkedThinkOf<X, Domain>) {
+  _holistic = {
+    ok:1
+  }
+  _start({ _, $ }: LinkedThinkOf<X, LasDomain>) {
     $.age.up(x=>{
       console.log("::",x)
     })
@@ -30,11 +33,13 @@ class X extends Store<X> {
     return "-"
   }
 }
-// const classStore = MakeThing(X).domain('x').register()
-const cms = MakeThing(X).domain('x').register()
+const classStore = MakeThing(X).domain('x').register()
+const cms = MakeThing(X).multiRegister()
 // let cms: XT<X>
-// cms.ok()
+console.log("sub")
 
+cms.onNewRegistration(x=>{
+  console.log("id", x.$id)
+})
 
-console.log(cms.okg)
-
+cms(33)

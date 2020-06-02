@@ -2,10 +2,13 @@ require('ts-node').register()
 
 const { executeCommand } = require('./helpers')
 const chokidar = require('chokidar')
+const path = require('path')
 
 const task = process.argv[2]
+const cwd = path.resolve(".")
 
 console.log('make', task)
+console.log({cwd})
 
 let t
 switch (task) {
@@ -20,7 +23,7 @@ switch (task) {
         console.clear()
         console.log('--------------------------------------------')
         console.log(Date.now())
-        executeCommand('node make play')
+        executeCommand('node make play', cwd)
       }, 100)
     })
     break
@@ -32,9 +35,12 @@ switch (task) {
     chokidar.watch('./make/').on('all', (event, path) => {
       clearInterval(t)
       t = setTimeout(() => {
-        executeCommand('node make publish sens')
+        executeCommand('node make publish sens', cwd)
       }, 100)
     })
+    break
+  case 'link':
+    require('./publish').link(process.argv[3])
     break
   case 'publish':
     require('./publish').publish(process.argv[3])

@@ -21,10 +21,12 @@ export function awake(box: IBox) {
 }
 
 export function getup(way, id?, target?) {
-  const domain = (id ? way.domain + '.' + id : way.domain) || ".."
+  const domain = id ? way.domain + '.' + id : way.domain
+  console.log({domain})
+
   const { thing } = way
   const sens = getSens(thing, domain)
-  const body = { ...sens.atoms } as LasHiddenSens
+  const body = { ...sens.atoms } as LosHiddenSens
   const proxyAtoms = new Proxy({ body, domain }, atomsProxyHandler)
   sens.isClass && decorate(proxyAtoms, thing)
   body.$ = proxyAtoms
@@ -32,6 +34,7 @@ export function getup(way, id?, target?) {
   body.$id = id || way.domain || body.$uid
   body.$actions = domainActions
   body.$atoms = domainAtoms
+  body.$holistic = sens.holistic
   body._ = new Proxy({body:sens.privateAtoms, domain}, atomsProxyHandler)
   if (target) body.$target = target
   proxyBody(body, proxyAtoms, sens.actions, sens.propDesk)
@@ -39,6 +42,7 @@ export function getup(way, id?, target?) {
   _start && _start({
     $:body.$,
     _:body._,
+    holistic: sens.holistic,
     id:body.$id,
     uid:body.$uid,
     atoms:domainAtoms,
@@ -84,6 +88,7 @@ function privateSens(instance,domain) {
 }
 const NaF = f => typeof f === 'function'
 
+
 function getSens(thing: any, domain) {
   const
     atoms = {},
@@ -91,14 +96,13 @@ function getSens(thing: any, domain) {
     actions = {}
   let instance, privateAtoms
   let isClass = false
+
   if (typeof thing === 'function') {
     instance = new thing()
     isClass = true
     privateAtoms = privateSens(instance, domain)
     let protoOfInstance = Object.getPrototypeOf(instance)
     let methods = Object.getOwnPropertyNames(protoOfInstance)
-
-
     methods.shift()
     methods.forEach(key => {
       let opd = Object.getOwnPropertyDescriptor(protoOfInstance, key)
@@ -112,15 +116,18 @@ function getSens(thing: any, domain) {
       addAtom(key, atoms, domain, instance[key])
     )
   } else {
-    privateAtoms = privateSens(instance, thing)
+    instance = thing
+    privateAtoms = privateSens(thing, domain)
     Object.keys(thing).forEach(key => {
       let value = thing[key]
       if (typeof value === 'function') actions[key] = value
       else addAtom(key, atoms, domain, value)
     })
   }
+  const {_holistic} = instance
 
   return {
+    holistic: _holistic || {},
     isClass,
     actions,
     propDesk,

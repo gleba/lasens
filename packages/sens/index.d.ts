@@ -31,17 +31,18 @@ interface ILaSensStore<Thing, IDomain> {
   _decay?(): void
 }
 
-type LasFilterFlags<T, Condition> = {
+type LosFilterFlags<T, Condition> = {
   [Key in keyof T]: T[Key] extends Condition ? Key : never
 }
 
-type LasAllowedNames<T, Condition> = LasFilterFlags<T, Condition>[keyof T]
-type LasHiddenSens = {
+type LosAllowedNames<T, Condition> = LosFilterFlags<T, Condition>[keyof T]
+type LosHiddenSens = {
   $?: any
   _?: any
   $target: any
   $atoms?: any
   $actions?: any
+  $holistic?: any
   $uid?: any
   $id?: any
   _start?: AnyFunction
@@ -49,25 +50,27 @@ type LasHiddenSens = {
   _private:any
 }
 
-type LasClarify<T> = Omit<T, keyof LasHiddenSens>
-type LasAtomized<T> = { readonly [K in keyof T]: IAtom<T[K]> }
+type LosClarify<T> = Omit<T, keyof LosHiddenSens>
+type LosAtomized<T> = { readonly [K in keyof T]: IAtom<T[K]> }
 
 declare type LinkedThinkOf<T, D> = {
-  $:LasAtomized<RmFunc<T>>
-  _:LasPrivateFrom<T>
+  $:LosAtomized<RmFunc<T>>
+  _:LosPrivateFrom<T>
+  holistic:LosHolyFrom<T>
 } & LinksTo<D>
 
-type RmType<T, Condition> = Omit<T, LasAllowedNames<T, Condition>>
-type PickType<T, Condition> = Pick<T, LasAllowedNames<T, Condition>>
-type RmFunc<T> = RmType<LasClarify<T>, Func>
-type OnlyFunc<T> = PickType<LasClarify<T>, Func>
+type RmType<T, Condition> = Omit<T, LosAllowedNames<T, Condition>>
+type PickType<T, Condition> = Pick<T, LosAllowedNames<T, Condition>>
+type RmFunc<T> = RmType<LosClarify<T>, Func>
+type OnlyFunc<T> = PickType<LosClarify<T>, Func>
 type Func = (args: any) => any
 
-type LasAtomsFrom<T> = T extends { atoms: any } ? T['atoms'] : any
-type LasActionsFrom<T> = T extends { actions: any } ? T['actions'] : any
-type LasPrivateFrom<T> = T extends { _private: any } ? LasAtomized<StyledThing<T['_private']>> : any
-type DomainActions<D> = { [K in keyof D]: LasActionsFrom<D[K]> }
-type DomainAtoms<D> = { [K in keyof D]: LasAtomsFrom<D[K]> }
+type LosAtomsFrom<T> = T extends { atoms: any } ? T['atoms'] : any
+type LosActionsFrom<T> = T extends { actions: any } ? T['actions'] : any
+type LosHolyFrom<T> = T extends { actions: any } ? T['actions'] : any
+type LosPrivateFrom<T> = T extends { _private: any } ? LosAtomized<StyledThing<T['_private']>> : any
+type DomainActions<D> = { [K in keyof D]: LosActionsFrom<D[K]> }
+type DomainAtoms<D> = { [K in keyof D]: LosAtomsFrom<D[K]> }
 
 interface LinksTo<D> {
   id: string | number
@@ -77,12 +80,20 @@ interface LinksTo<D> {
   target?: any
 }
 
-type AtomizedSingleThing<X> = LasAtomized<RmFunc<X>> & OnlyFunc<X>
 
-interface AtomizedMultiThing<X> {
+
+type AtomizedSingleThing<X> = LosAtomized<RmFunc<X>> & OnlyFunc<X> & AtomizedThing<X>
+interface AtomizedThing<X> {
+  $id: string
+  $uid: string | number
+  $domain: string
+  $holistic: LosHolyFrom<X>
+}
+interface AtomizedMultiThing<X> extends AtomizedThing<X> {
   (id: any): AtomizedSingleThing<X>
   remove(id: any): void
   broadcast: AtomizedSingleThing<X>
+  onNewRegistration(listener:(thing:AtomizedSingleThing<X>)=>void)
 }
 
 interface LifeCycleOption {

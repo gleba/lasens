@@ -58,4 +58,3 @@ export const makeLib = async () => {
     console.log(`defs for ${key} are ready`)
   }
 }
-makeLib()

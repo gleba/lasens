@@ -1,16 +1,18 @@
 /// <reference path="../index.d.ts"/>
 import { awake, getup } from './awake'
+import { A } from 'alak'
 
-export interface Domain {}
+export interface LasDomain {}
 
 
-export abstract class DomainStore<Thing, IDomain>
-  implements ILaSensStore<Thing, Domain> {
+export abstract class DomainSens<Thing, IDomain>
+  implements ILaSensStore<Thing, LasDomain> {
 
   _decay?(): void
-  _?: LasPrivateFrom<Thing>
-  _private: PrivateFlow
-  $: LasAtomized<RmFunc<Thing>>
+  _?: LosPrivateFrom<Thing>
+  _private?: PrivateFlow
+  _holistic?: any
+  $: LosAtomized<RmFunc<Thing>>
   $atoms?: DomainAtoms<IDomain>
   $actions?: DomainActions<IDomain>
   $uid?: string | number
@@ -19,7 +21,7 @@ export abstract class DomainStore<Thing, IDomain>
 
 }
 
-export abstract class Store<Thing> extends DomainStore<Thing, Domain> {}
+export abstract class Sens<Thing> extends DomainSens<Thing, LasDomain> {}
 
 
 export interface IWay {
@@ -32,6 +34,7 @@ export interface IWay {
 export function MakeThing<T>(thing: T): Thing<T> {
   const way: IWay = {
     thing,
+    domain:"los"
   }
   const finalSteeps = {
     register: () => register(way),
@@ -63,6 +66,7 @@ export interface IBox {
 
 function multiRegister(way: IWay) {
   const activities = new Map()
+  const register = A.stateless()
   function getter(target) {
     let id, key
     let uid = Math.random()
@@ -81,10 +85,12 @@ function multiRegister(way: IWay) {
     if (activities.has(key)) return activities.get(key)
     let activity = getup(way, key, target)
     activities.set(key, activity)
+    register({ activity })
     return activity
   }
   getter.remove = () => {}
   getter.broadcast = () => {}
+  getter.onNewRegistration = f=>register.up(v=>f(v.activity))
   return getter as any
 }
 

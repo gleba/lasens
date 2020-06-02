@@ -1,4 +1,4 @@
-import { MakeThing, Store } from '@la/sens'
+import { MakeThing, Sens } from '@la/sens'
 
 describe('make things', () => {
   test('class things', () => {
