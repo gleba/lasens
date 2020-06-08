@@ -15,14 +15,15 @@ class X extends Sens<X> {
   _holistic = {
     ok:1
   }
-  _start({ _, $ }: LinkedThinkOf<X, LasDomain>) {
+  _start({ $, _, holistic }: LinkedThinkOf<X, LasDomain>) {
     $.age.up(x=>{
-      console.log("::",x)
+      console.log("::",_.mem )
     })
-    $.age(_.mem.value)
+
   }
   //
   ok() {
+
     console.log('ok')
     return 0
   }
@@ -34,12 +35,15 @@ class X extends Sens<X> {
   }
 }
 const classStore = MakeThing(X).domain('x').register()
-const cms = MakeThing(X).multiRegister()
+const cms = MakeThing(X).register()
 // let cms: XT<X>
 console.log("sub")
 
-cms.onNewRegistration(x=>{
-  console.log("id", x.$id)
-})
+// cms.onNewRegistration(x=>{
+//   console.log("id", x.$id)
+// })
+//
+cms.age(1)
+console.log(":")
+console.log({cms})
 
-cms(33)

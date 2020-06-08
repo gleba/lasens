@@ -39,12 +39,14 @@ type LosAllowedNames<T, Condition> = LosFilterFlags<T, Condition>[keyof T]
 type LosHiddenSens = {
   $?: any
   _?: any
+  __?: any
   $target: any
   $atoms?: any
   $actions?: any
-  $holistic?: any
   $uid?: any
   $id?: any
+  $holistic?: any
+  _holistic?: any
   _start?: AnyFunction
   _decay?: AnyFunction
   _private:any
@@ -67,7 +69,7 @@ type Func = (args: any) => any
 
 type LosAtomsFrom<T> = T extends { atoms: any } ? T['atoms'] : any
 type LosActionsFrom<T> = T extends { actions: any } ? T['actions'] : any
-type LosHolyFrom<T> = T extends { actions: any } ? T['actions'] : any
+type LosHolyFrom<T> = T extends { _holistic: any } ? T['_holistic'] : any
 type LosPrivateFrom<T> = T extends { _private: any } ? LosAtomized<StyledThing<T['_private']>> : any
 type DomainActions<D> = { [K in keyof D]: LosActionsFrom<D[K]> }
 type DomainAtoms<D> = { [K in keyof D]: LosAtomsFrom<D[K]> }
@@ -82,14 +84,19 @@ interface LinksTo<D> {
 
 
 
-type AtomizedSingleThing<X> = LosAtomized<RmFunc<X>> & OnlyFunc<X> & AtomizedThing<X>
-interface AtomizedThing<X> {
-  $id: string
-  $uid: string | number
-  $domain: string
-  $holistic: LosHolyFrom<X>
+type AtomizedSingleThing<X> = LosAtomized<RmFunc<X>> & OnlyFunc<X> & ShieldedThing<X>
+
+interface ShieldedThing<X> {
+  $: {
+    id: string
+    uid: string | number
+    domain: string
+
+  }
+  _: LosHolyFrom<X>
 }
-interface AtomizedMultiThing<X> extends AtomizedThing<X> {
+
+interface AtomizedMultiThing<X> extends ShieldedThing<X> {
   (id: any): AtomizedSingleThing<X>
   remove(id: any): void
   broadcast: AtomizedSingleThing<X>

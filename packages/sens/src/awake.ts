@@ -49,7 +49,16 @@ export function getup(way, id?, target?) {
     actions:domainActions,
     target
   })
-  return new Proxy({ body, proxyAtoms }, publicProxyHandlers)
+
+
+  return new Proxy({ body:{
+    $:{
+      id:body.$id,
+      uid:body.$uid,
+      holistic:sens.holistic
+    },
+    ...sens.actions
+    }, proxyAtoms }, publicProxyHandlers)
 }
 
 function proxyBody(body, atoms, actions, desk) {
