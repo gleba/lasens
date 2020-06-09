@@ -55,9 +55,10 @@ type LosHiddenSens = {
 type LosClarify<T> = Omit<T, keyof LosHiddenSens>
 type LosAtomized<T> = { readonly [K in keyof T]: IAtom<T[K]> }
 
+type LasAtoms<T> = LosAtomized<RmFunc<T>> & LosPrivateFrom<T>
 declare type LinkedThinkOf<T, D> = {
-  $:LosAtomized<RmFunc<T>>
-  _:LosPrivateFrom<T>
+  $:LasAtoms<T>
+  // _:LosPrivateFrom<T>
   _holistic:LosHolyFrom<T>
 } & LinksTo<D>
 
@@ -80,7 +81,6 @@ interface LinksTo<D> {
   atoms: DomainAtoms<D>
   actions: DomainActions<D>
 }
-
 
 
 type AtomizedSingleThing<X> = LosAtomized<RmFunc<X>> & OnlyFunc<X> & ShieldedThing<X>
@@ -107,13 +107,26 @@ interface LifeCycleOption {
   decayByInactivity?: boolean
   decayDelay?: number
 }
+// type LosAany<T> = { readonly [K in keyof T]: IAtom<T[K]> }
+
+type ActionsObj<T> = {
+  [key: string]: (this:  LasAtoms<T>) => any
+}
+
+interface CustomAction {
+  newAction():any
+}
 
 interface ExtendedAtoms<X> extends ExtendedActions<X> {
-  privateAtoms(P):ExtendedActions<X>
+  privateAtoms(a:any):ExtendedActions<X>
 }
-interface ExtendedActions<X> extends LifeCycle<X> {
-  publicActions(P):LifeCycle<X>
+interface Constructor<X> extends LifeCycle<X> {
+  constructor():
 }
+interface ExtendedActions<X> extends Constructor<X> {
+  publicActions<AO extends ActionsObj<X>>(actions:AO):LifeCycle<X & CustomAction>
+}
+
 
 interface LifeCycle<X> extends TCStep<X> {
   lifeCycle(options: LifeCycleOption): TCStep<X>

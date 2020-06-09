@@ -29,6 +29,8 @@ export interface IWay {
   lifeCycle?: LifeCycleOption
   domain?: string
   multi?: boolean
+  privateThings?:any
+  publicAction?:any
 }
 
 export function MakeThing<T>(thing: T): Thing<T> {
@@ -44,7 +46,7 @@ export function MakeThing<T>(thing: T): Thing<T> {
     way.domain = name
     return finalSteeps
   }
-  return {
+  const middleSteps = {
     domain,
     lifeCycle(choices) {
       way.lifeCycle = choices
@@ -55,6 +57,22 @@ export function MakeThing<T>(thing: T): Thing<T> {
     },
     ...finalSteeps,
   } as Thing<T>
+  function publicActions(publicThings) {
+    way.publicAction = publicThings
+    return middleSteps
+  }
+  function privateAtoms(privateThings) {
+    way.privateThings = privateThings
+    return {
+      publicActions,
+      ...middleSteps
+    }
+  }
+  return {
+    publicActions,
+    privateAtoms,
+    ...middleSteps
+  }
 }
 
 export interface IBox {

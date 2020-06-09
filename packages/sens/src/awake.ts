@@ -25,20 +25,19 @@ export function awake(box: IBox) {
 
 export function getup(way, id?, target?) {
   const domain = id ? way.domain + '.' + id : way.domain
+  const uid = newRune(7)
+  id = id || uid
   const { thing } = way
   const {
-    atoms,
     actions,
     propDesk,
     _holistic,
-    privateAtoms,
-    isClass
+    publicAtoms,
+    privateAtoms
   } = getSens(thing, domain)
-  const publicProxyAtoms = new Proxy({ atoms, domain }, atomsProxyHandler)
-  isClass && decorate(publicProxyAtoms, thing)
-  const uid = newRune(7)
-  id = id || uid
-  const privateProxyAtoms = new Proxy({atoms: privateAtoms, domain}, atomsProxyHandler)
+
+  // const publicProxyAtoms = new Proxy({ atoms, domain }, atomsProxyHandler)
+  // const privateProxyAtoms = new Proxy({atoms: privateAtoms, domain}, atomsProxyHandler)
 
   const ctxPublic = {
     id,
@@ -47,15 +46,14 @@ export function getup(way, id?, target?) {
   } as any
   if (target) ctxPublic.target = target
   const ctxPrivate = {
-    $:publicProxyAtoms,
-    _:privateProxyAtoms,
+    $:new Proxy({publicAtoms,privateAtoms}, privateAtomsProxyHandler),
     _holistic,
   }
   const $ctx = {...ctxPrivate}
   Object.keys(ctxPublic).forEach(k=>{
     $ctx[`$${k}`] = ctxPublic[k]
   })
-  const bodyActions:any = makeBodyAction($ctx, publicProxyAtoms, actions, propDesk)
+  const bodyActions:any = makeBodyAction($ctx, publicAtoms, actions, propDesk)
   const { _start } = bodyActions
   _start && _start({...ctxPublic, ...ctxPrivate})
 
@@ -65,7 +63,7 @@ export function getup(way, id?, target?) {
       _holistic,
       ...ctxPublic},
 
-    }, atoms:publicProxyAtoms }, publicProxyHandlers)
+    }, atoms:publicAtoms }, publicProxyHandlers)
 }
 
 function makeBodyAction(ctx, proxyAtoms, actions, desk) {
@@ -114,13 +112,13 @@ function getSens(thing: any, domain) {
     atoms = {},
     propDesk = {} as KV<PropertyDescriptor>,
     actions = {}
-  let instance, privateAtoms
-  let isClass = false
+  let instance, proxyAtoms,
+    privateAtoms = {},
+    havePublicClass = false
 
   if (typeof thing === 'function') {
     instance = new thing()
-    isClass = true
-    privateAtoms = privateSens(instance, domain)
+    havePublicClass = true
     let protoOfInstance = Object.getPrototypeOf(instance)
     let methods = Object.getOwnPropertyNames(protoOfInstance)
     methods.shift()
@@ -137,21 +135,36 @@ function getSens(thing: any, domain) {
     )
   } else {
     instance = thing
-    privateAtoms = privateSens(thing, domain)
     Object.keys(thing).forEach(key => {
       let value = thing[key]
       if (typeof value === 'function') actions[key] = value
       else addAtom(key, atoms, domain, value)
     })
   }
-  // const {_holistic} = instance
+  const {_private} = instance
+  let havePrivateClass = false
+  let privateInstance
+  if (_private) {
+    if (typeof _private === 'function') {
+      privateAtoms = privateSens(new _private(), domain)
+      console.log({ privateAtoms })
+      // havePrivateClass = true
+      // publicProxyAtoms = new Proxy({ atoms, domain }, atomsProxyHandler)
+      // decorate(privateAtoms, _private)
+    } else {
+      privateAtoms = privateSens(instance, domain)
+      // console.log(":;privateAtoms", _private)
+    }}
+  const publicAtoms = new Proxy({atoms, domain}, atomsProxyHandler)
+  // privateAtoms = new Proxy({atoms:privateAtoms, domain}, atomsProxyHandler)
+  havePublicClass && decorate(publicAtoms, instance)
+  havePrivateClass && decorate(privateAtoms, _private)
   return {
     _holistic: instance._holistic || {},
-    isClass,
     actions,
     propDesk,
     privateAtoms,
-    atoms
+    publicAtoms
   }
 }
 
@@ -171,6 +184,11 @@ const bodyActionProxyHandlers = {
     const a = body[key] || atoms[key]
     a(value)
     return true
+  },
+}
+const privateAtomsProxyHandler = {
+  get({publicAtoms, privateAtoms}, key) {
+    return privateAtoms[key] || publicAtoms[key]
   },
 }
 const atomsProxyHandler = {

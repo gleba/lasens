@@ -26,8 +26,7 @@ class Store extends Sens<Store> {
   workMethod() {
     // this.age = 3
     console.log("## work ##")
-    console.log(this._)
-
+    // console.log(":", this.)
     // console.log("#", this.$.count.value)
     return 0
   }
@@ -43,17 +42,15 @@ class Private {
   secret = true
 }
 const cms = MakeThing(Store)
-  // .privateAtoms(Private)
-  // .publicActions({
-  //   some(){
-  //
-  //   }
-  // })
-  .register()
-
+  .privateAtoms(Private)
+  .publicActions({
+    ok(){
+      this.count
+    }
+  })
 // cms.age(5)
 // console.log(":")
-cms.workMethod()
+// cms.workMethod()
 
-console.log()
+console.log({ cms })
 
