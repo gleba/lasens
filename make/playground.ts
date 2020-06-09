@@ -1,11 +1,11 @@
 import { LasDomain, MakeThing, Sens } from '../packages/sens/src'
 import { changeFx, qubit, stored } from '../packages/sens/src/decor'
 
-class X extends Sens<X> {
+class Store extends Sens<Store> {
   // name: string
-  // count = 1
+  count = 1
 
-  yes = 1
+  // yes = 1
 
   @stored age: number
 
@@ -15,35 +15,45 @@ class X extends Sens<X> {
   _holistic = {
     ok:1
   }
-  _start({ $, _, holistic }: LinkedThinkOf<X, LasDomain>) {
-    $.age.up(x=>{
-      console.log("::",_.mem )
-    })
+  _start(ln: LinkedThinkOf<Store, LasDomain>) {
+    // console.log(ln.$.count)
 
+    // $.age.up(x=>{
+    //   console.log("::",_.mem )
+    // })
   }
   //
-  ok() {
+  workMethod() {
+    // this.age = 3
+    console.log("## work ##")
+    console.log(this._)
 
-    console.log('ok')
+    // console.log("#", this.$.count.value)
     return 0
   }
 
-  get okg(){
-    // console.log("--get-|",this.yes +"|")
-    console.log( this._)
-    return "-"
-  }
+  // get okg(){
+  //   // console.log("--get-|",this.yes +"|")
+  //   return "-"
+  // }
 }
-const classStore = MakeThing(X).domain('x').register()
-const cms = MakeThing(X).register()
-// let cms: XT<X>
-console.log("sub")
+// const classStore = MakeThing(X).domain('x').register()
 
-// cms.onNewRegistration(x=>{
-//   console.log("id", x.$id)
-// })
-//
-cms.age(1)
-console.log(":")
-console.log({cms})
+class Private {
+  secret = true
+}
+const cms = MakeThing(Store)
+  // .privateAtoms(Private)
+  // .publicActions({
+  //   some(){
+  //
+  //   }
+  // })
+  .register()
+
+// cms.age(5)
+// console.log(":")
+cms.workMethod()
+
+console.log()
 

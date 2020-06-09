@@ -8,7 +8,7 @@ const task = process.argv[2]
 const cwd = path.resolve(".")
 
 console.log('make', task)
-console.log({cwd})
+console.log(process.argv)
 
 let t
 switch (task) {

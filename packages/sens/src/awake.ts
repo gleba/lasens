@@ -1,4 +1,4 @@
-import { IBox, IWay } from './index'
+import { IBox, IWay, newRune } from './index'
 import { A } from 'alak'
 import {
   domainActions,
@@ -8,9 +8,12 @@ import {
 } from './domain'
 import { decorate } from './decor'
 
-const systemActions = {
+const systemFields = {
   _start: true as any,
   _decay: true as any,
+  _private: true as any,
+  _holistic: true as any,
+  body: true as any,
 }
 
 export function awake(box: IBox) {
@@ -22,49 +25,55 @@ export function awake(box: IBox) {
 
 export function getup(way, id?, target?) {
   const domain = id ? way.domain + '.' + id : way.domain
-  console.log({domain})
-
   const { thing } = way
-  const sens = getSens(thing, domain)
-  const body = { ...sens.atoms } as LosHiddenSens
-  const proxyAtoms = new Proxy({ body, domain }, atomsProxyHandler)
-  sens.isClass && decorate(proxyAtoms, thing)
-  body.$ = proxyAtoms
-  body.$uid = Math.random()
-  body.$id = id || way.domain || body.$uid
-  body.$actions = domainActions
-  body.$atoms = domainAtoms
-  body.$holistic = sens.holistic
-  body._ = new Proxy({body:sens.privateAtoms, domain}, atomsProxyHandler)
-  if (target) body.$target = target
-  proxyBody(body, proxyAtoms, sens.actions, sens.propDesk)
-  const { _start } = body
-  _start && _start({
-    $:body.$,
-    _:body._,
-    holistic: sens.holistic,
-    id:body.$id,
-    uid:body.$uid,
-    atoms:domainAtoms,
-    actions:domainActions,
-    target
-  })
+  const {
+    atoms,
+    actions,
+    propDesk,
+    _holistic,
+    privateAtoms,
+    isClass
+  } = getSens(thing, domain)
+  const publicProxyAtoms = new Proxy({ atoms, domain }, atomsProxyHandler)
+  isClass && decorate(publicProxyAtoms, thing)
+  const uid = newRune(7)
+  id = id || uid
+  const privateProxyAtoms = new Proxy({atoms: privateAtoms, domain}, atomsProxyHandler)
 
+  const ctxPublic = {
+    id,
+    uid,
+    domain
+  } as any
+  if (target) ctxPublic.target = target
+  const ctxPrivate = {
+    $:publicProxyAtoms,
+    _:privateProxyAtoms,
+    _holistic,
+  }
+  const $ctx = {...ctxPrivate}
+  Object.keys(ctxPublic).forEach(k=>{
+    $ctx[`$${k}`] = ctxPublic[k]
+  })
+  const bodyActions:any = makeBodyAction($ctx, publicProxyAtoms, actions, propDesk)
+  const { _start } = bodyActions
+  _start && _start({...ctxPublic, ...ctxPrivate})
 
   return new Proxy({ body:{
+    ...bodyActions,
     $:{
-      id:body.$id,
-      uid:body.$uid,
-      holistic:sens.holistic
-    },
-    ...sens.actions
-    }, proxyAtoms }, publicProxyHandlers)
+      _holistic,
+      ...ctxPublic},
+
+    }, atoms:publicProxyAtoms }, publicProxyHandlers)
 }
 
-function proxyBody(body, atoms, actions, desk) {
-  const proxy = new Proxy({ body, atoms }, bodyProxyHandlers)
+function makeBodyAction(ctx, proxyAtoms, actions, desk) {
+  const body = {}
+  const proxy = new Proxy({ ctx, body, atoms:proxyAtoms }, bodyActionProxyHandlers)
   actions &&
     Object.keys(actions).forEach(key => {
+      // console.log("::", key)
       body[key] = actions[key].bind(proxy)
     })
   desk && Object.keys(desk).forEach(key=>{
@@ -74,9 +83,11 @@ function proxyBody(body, atoms, actions, desk) {
       set:dp.set && dp.set.bind(proxy),
     } as any)
   })
+  return body
 }
 
 export const addAtom = (key, body: any, domain?, value?) => {
+  if (systemFields[key]) throw "system field in atom"
   const atom = value ? A(value) : A()
   atom.setId(domain + '.' + key)
   atom.setName(key)
@@ -122,7 +133,7 @@ function getSens(thing: any, domain) {
       }
     })
     Object.keys(instance).forEach(key =>
-      addAtom(key, atoms, domain, instance[key])
+      !systemFields[key] && addAtom(key, atoms, domain, instance[key])
     )
   } else {
     instance = thing
@@ -133,37 +144,37 @@ function getSens(thing: any, domain) {
       else addAtom(key, atoms, domain, value)
     })
   }
-  const {_holistic} = instance
-
+  // const {_holistic} = instance
   return {
-    holistic: _holistic || {},
+    _holistic: instance._holistic || {},
     isClass,
     actions,
     propDesk,
     privateAtoms,
-    atoms,
+    atoms
   }
 }
 
 const publicProxyHandlers = {
-  get({ body, proxyAtoms }, key) {
-    return body[key] || proxyAtoms[key]
+  get({ body, atoms }, key) {
+    // console.log("public call", key)
+    return body[key] || atoms[key]
   },
 }
-const bodyProxyHandlers = {
-  get({ body, atoms }, key) {
-    if (key[0] === '$') return body[key]
-    const a = body[key] || atoms[key]
-    return a._ ? a.value : a
+const bodyActionProxyHandlers = {
+  get({ ctx, body,  atoms }, key) {
+    const v = ctx[key] || body[key]
+    if (v) return v
+    return atoms[key]
   },
-  set({ body, atoms }, key, value) {
+  set({ ctx, body, atoms }, key, value) {
     const a = body[key] || atoms[key]
     a(value)
     return true
   },
 }
 const atomsProxyHandler = {
-  get({ body, domain }, key) {
-    return body[key] || addAtom(key, body, domain)
+  get({ atoms, domain }, key) {
+    return atoms[key] || addAtom(key, atoms, domain)
   },
 }

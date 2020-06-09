@@ -39,17 +39,17 @@ type LosAllowedNames<T, Condition> = LosFilterFlags<T, Condition>[keyof T]
 type LosHiddenSens = {
   $?: any
   _?: any
-  __?: any
+  // __?: any
   $target: any
   $atoms?: any
   $actions?: any
   $uid?: any
   $id?: any
-  $holistic?: any
+  // $holistic?: any
   _holistic?: any
   _start?: AnyFunction
   _decay?: AnyFunction
-  _private:any
+  _private?:any
 }
 
 type LosClarify<T> = Omit<T, keyof LosHiddenSens>
@@ -58,7 +58,7 @@ type LosAtomized<T> = { readonly [K in keyof T]: IAtom<T[K]> }
 declare type LinkedThinkOf<T, D> = {
   $:LosAtomized<RmFunc<T>>
   _:LosPrivateFrom<T>
-  holistic:LosHolyFrom<T>
+  _holistic:LosHolyFrom<T>
 } & LinksTo<D>
 
 type RmType<T, Condition> = Omit<T, LosAllowedNames<T, Condition>>
@@ -79,7 +79,6 @@ interface LinksTo<D> {
   uid: number
   atoms: DomainAtoms<D>
   actions: DomainActions<D>
-  target?: any
 }
 
 
@@ -91,9 +90,9 @@ interface ShieldedThing<X> {
     id: string
     uid: string | number
     domain: string
-
+    target?: any
+    _holistic: LosHolyFrom<X>
   }
-  _: LosHolyFrom<X>
 }
 
 interface AtomizedMultiThing<X> extends ShieldedThing<X> {
@@ -109,6 +108,13 @@ interface LifeCycleOption {
   decayDelay?: number
 }
 
+interface ExtendedAtoms<X> extends ExtendedActions<X> {
+  privateAtoms(P):ExtendedActions<X>
+}
+interface ExtendedActions<X> extends LifeCycle<X> {
+  publicActions(P):LifeCycle<X>
+}
+
 interface LifeCycle<X> extends TCStep<X> {
   lifeCycle(options: LifeCycleOption): TCStep<X>
 }
@@ -120,10 +126,10 @@ interface TCStep<X> extends TCFinalizeUp<X> {
   domain(namespace: string): TCFinalizeUp<X>
 }
 
-interface ThingConstructor<X> extends LifeCycle<X>, TCStep<X> {}
+interface ThingConstructor<X> extends ExtendedAtoms<X>, TCStep<X> {}
 
 type StyledThing<T> = T extends ClassInstance ? ClassToKV<T> : T
 
 type Thing<X> = ThingConstructor<StyledThing<X>>
 
-type XT<X> = OnlyFunc<StyledThing<X>>
+// type XT<X> = OnlyFunc<StyledThing<X>>

@@ -64,6 +64,14 @@ export interface IBox {
   awakened?: any
 }
 
+export {
+ stored
+} from "./decor"
+
+export {
+  newRune
+} from "./utils"
+
 function multiRegister(way: IWay) {
   const activities = new Map()
   const register = A.stateless()
@@ -114,9 +122,9 @@ const boxHandlers = {
     box.isSleep && box.wakeUp()
     return box.awakened[p]
   },
-  set(box: IBox, p: PropertyKey, value: any, receiver: any): boolean {
-    box.isSleep && box.wakeUp()
-    box.awakened[p] = p
-    return true
-  },
+  // set(box: IBox, p: PropertyKey, value: any, receiver: any): boolean {
+  //   box.isSleep && box.wakeUp()
+  //   box.awakened[p] = p
+  //   return true
+  // },
 }
