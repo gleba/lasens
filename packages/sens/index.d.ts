@@ -4,7 +4,7 @@ type ClassToKV<T> = T extends ClassInstance ? InstanceType<T> : never
 
 type PublicFlow<T> = Omit<IAtom<T>, keyof HiddenAtomProps>
 type NoFunctionValue =
-  boolean
+  | boolean
   | string
   | number
   | null
@@ -49,7 +49,7 @@ type LosHiddenSens = {
   _holistic?: any
   _start?: AnyFunction
   _decay?: AnyFunction
-  _private?:any
+  _private?: any
 }
 
 type LosClarify<T> = Omit<T, keyof LosHiddenSens>
@@ -57,9 +57,9 @@ type LosAtomized<T> = { readonly [K in keyof T]: IAtom<T[K]> }
 
 type LasAtoms<T> = LosAtomized<RmFunc<T>> & LosPrivateFrom<T>
 declare type LinkedThinkOf<T, D> = {
-  $:LasAtoms<T>
+  $: LasAtoms<T>
+  _holistic: LosHolyFrom<T>
   // _:LosPrivateFrom<T>
-  _holistic:LosHolyFrom<T>
 } & LinksTo<D>
 
 type RmType<T, Condition> = Omit<T, LosAllowedNames<T, Condition>>
@@ -71,7 +71,9 @@ type Func = (args: any) => any
 type LosAtomsFrom<T> = T extends { atoms: any } ? T['atoms'] : any
 type LosActionsFrom<T> = T extends { actions: any } ? T['actions'] : any
 type LosHolyFrom<T> = T extends { _holistic: any } ? T['_holistic'] : any
-type LosPrivateFrom<T> = T extends { _private: any } ? LosAtomized<StyledThing<T['_private']>> : any
+type LosPrivateFrom<T> = T extends { _private: any }
+  ? LosAtomized<StyledThing<T['_private']>>
+  : any
 type DomainActions<D> = { [K in keyof D]: LosActionsFrom<D[K]> }
 type DomainAtoms<D> = { [K in keyof D]: LosAtomsFrom<D[K]> }
 
@@ -82,8 +84,9 @@ interface LinksTo<D> {
   actions: DomainActions<D>
 }
 
-
-type AtomizedSingleThing<X> = LosAtomized<RmFunc<X>> & OnlyFunc<X> & ShieldedThing<X>
+type AtomizedSingleThing<X> = LosAtomized<RmFunc<X>> &
+  OnlyFunc<X> &
+  ShieldedThing<X>
 
 interface ShieldedThing<X> {
   $: {
@@ -91,7 +94,7 @@ interface ShieldedThing<X> {
     uid: string | number
     domain: string
     target?: any
-    _holistic: LosHolyFrom<X>
+    _?: LosHolyFrom<X>
   }
 }
 
@@ -99,8 +102,14 @@ interface AtomizedMultiThing<X> extends ShieldedThing<X> {
   (id: any): AtomizedSingleThing<X>
   remove(id: any): void
   broadcast: AtomizedSingleThing<X>
-  onNewRegistration(listener:(thing:AtomizedSingleThing<X>)=>void)
+  onNewRegistration(listener: (thing: AtomizedSingleThing<X>) => void)
 }
+
+type BodySens<X> = LosAtomized<RmFunc<X>> &
+  OnlyFunc<X> &
+  ShieldedThing<X> & {
+    _?: LosHolyFrom<X>
+  }
 
 interface LifeCycleOption {
   immediatelyStart?: boolean
@@ -109,24 +118,20 @@ interface LifeCycleOption {
 }
 // type LosAany<T> = { readonly [K in keyof T]: IAtom<T[K]> }
 
-type ActionsObj<T> = {
-  [key: string]: (this:  LasAtoms<T>) => any
-}
-
 interface CustomAction {
-  newAction():any
+  newAction(): any
 }
 
-interface ExtendedAtoms<X> extends ExtendedActions<X> {
-  privateAtoms(a:any):ExtendedActions<X>
+interface ExtendedPrivateAtoms<X> extends ExtendedActions<X, never> {
+  privateAtoms<P>(a: P): ExtendedActions<X, StyledThing<P>>
 }
-interface Constructor<X> extends LifeCycle<X> {
-  constructor():
-}
-interface ExtendedActions<X> extends Constructor<X> {
-  publicActions<AO extends ActionsObj<X>>(actions:AO):LifeCycle<X & CustomAction>
+interface EdgeConstructor<X, P> extends LifeCycle<X> {
+  constructor<AO>(fn: (body: BodySens<X & P>) => AO): LifeCycle<X & AO>
 }
 
+interface ExtendedActions<X, P> extends EdgeConstructor<X, P> {
+  publicActions<AO>(actions: AO): EdgeConstructor<X & StyledThing<AO>, P>
+}
 
 interface LifeCycle<X> extends TCStep<X> {
   lifeCycle(options: LifeCycleOption): TCStep<X>
@@ -139,7 +144,7 @@ interface TCStep<X> extends TCFinalizeUp<X> {
   domain(namespace: string): TCFinalizeUp<X>
 }
 
-interface ThingConstructor<X> extends ExtendedAtoms<X>, TCStep<X> {}
+interface ThingConstructor<X> extends ExtendedPrivateAtoms<X>, TCStep<X> {}
 
 type StyledThing<T> = T extends ClassInstance ? ClassToKV<T> : T
 

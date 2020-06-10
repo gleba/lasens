@@ -4,10 +4,8 @@ import { A } from 'alak'
 
 export interface LasDomain {}
 
-
 export abstract class DomainSens<Thing, IDomain>
   implements ILaSensStore<Thing, LasDomain> {
-
   _decay?(): void
   _?: LosPrivateFrom<Thing>
   _private?: PrivateFlow
@@ -18,25 +16,24 @@ export abstract class DomainSens<Thing, IDomain>
   $uid?: string | number
   $id?: string | number
   $target?: any
-
 }
 
 export abstract class Sens<Thing> extends DomainSens<Thing, LasDomain> {}
-
 
 export interface IWay {
   thing: any
   lifeCycle?: LifeCycleOption
   domain?: string
   multi?: boolean
-  privateThings?:any
-  publicAction?:any
+  privateThings?: any
+  publicAction?: any
+  constructor?: any
 }
 
 export function MakeThing<T>(thing: T): Thing<T> {
   const way: IWay = {
     thing,
-    domain:"los"
+    domain: 'los',
   }
   const finalSteeps = {
     register: () => register(way),
@@ -57,21 +54,30 @@ export function MakeThing<T>(thing: T): Thing<T> {
     },
     ...finalSteeps,
   } as Thing<T>
+  function constructor(f) {
+    way.constructor = f
+    return middleSteps
+  }
   function publicActions(publicThings) {
     way.publicAction = publicThings
-    return middleSteps
+    return {
+      constructor,
+      ...middleSteps,
+    }
   }
   function privateAtoms(privateThings) {
     way.privateThings = privateThings
     return {
+      constructor,
       publicActions,
-      ...middleSteps
+      ...middleSteps,
     }
   }
   return {
+    constructor,
     publicActions,
     privateAtoms,
-    ...middleSteps
+    ...middleSteps,
   }
 }
 
@@ -82,13 +88,9 @@ export interface IBox {
   awakened?: any
 }
 
-export {
- stored
-} from "./decor"
+export { stored } from './decor'
 
-export {
-  newRune
-} from "./utils"
+export { newRune } from './utils'
 
 function multiRegister(way: IWay) {
   const activities = new Map()
@@ -116,7 +118,7 @@ function multiRegister(way: IWay) {
   }
   getter.remove = () => {}
   getter.broadcast = () => {}
-  getter.onNewRegistration = f=>register.up(v=>f(v.activity))
+  getter.onNewRegistration = f => register.up(v => f(v.activity))
   return getter as any
 }
 
