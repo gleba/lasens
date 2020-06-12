@@ -26,10 +26,10 @@ type HiddenAtomProps = {
   decay: any
 }
 
-interface ILaSensStore<Thing, IDomain> {
-  _start?(ln: LinkedThinkOf<Thing, IDomain>): void
-  _decay?(): void
-}
+// interface ILaSensStore<Thing, IDomain> {
+//   // _start?(ln: LinkedThinkOf<Thing, IDomain>): void
+//   // _decay?(): void
+// }
 
 type LosFilterFlags<T, Condition> = {
   [Key in keyof T]: T[Key] extends Condition ? Key : never
@@ -41,10 +41,9 @@ type LosHiddenSens = {
   _?: any
   // __?: any
   $target: any
-  $atoms?: any
-  $actions?: any
   $uid?: any
   $id?: any
+  $link?: any
   // $holistic?: any
   // _holistic?: any
   _start?: AnyFunction
@@ -127,7 +126,9 @@ interface ExtendedPrivateAtoms<X, P> extends ExtendedActions<X, P> {
 }
 
 interface EdgeConstructor<X, P> extends LifeCycle<X> {
-  constructor<AO>(fn: (body: BodySens<X & P>) => AO): LifeCycle<X & UnpackedPromise<AO>>
+  constructor<AO>(
+    fn: (body: BodySens<X & P>) => AO
+  ): LifeCycle<X & UnpackedPromise<AO>>
 }
 
 interface ExtendedActions<X, P> extends EdgeConstructor<X, P> {

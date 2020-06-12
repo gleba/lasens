@@ -5,14 +5,14 @@ import { A } from 'alak'
 export interface LasDomain {}
 
 export abstract class DomainSens<Thing, IDomain>
-  implements ILaSensStore<Thing, LasDomain> {
-  _decay?(): void
+// implements ILaSensStore<Thing, LasDomain>
+{
+  // _decay?(): void
   // _?: LosPrivateFrom<Thing>
   // _private?: PrivateFlow
   // _?: any
   $: LosAtomized<RmFunc<Thing>>
-  $atoms?: DomainAtoms<IDomain>
-  $actions?: DomainActions<IDomain>
+  $link?: IDomain
   $uid?: string | number
   $id?: string | number
   $target?: any

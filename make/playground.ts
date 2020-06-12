@@ -22,24 +22,19 @@ class Store extends Sens<Store> {
 
   @stored age: number
 
-  _private = {
-    mem: 5,
-  }
+  // _private = {
+  //   mem: 5,
+  // }
   _ = {
     holy: 'stick',
   }
-  _start(ln: LinkedThinkOf<Store, LasDomain>) {
-    // console.log(ln.$.count)
-    // $.age.up(x=>{
-    //   console.log("::",_.mem )
-    // })
-  }
+
   //
   workMethod() {
-    // this.age = 3
+    this.age = 3
     console.log('## work ##')
     // console.log(":", this.)
-    // console.log("#", this.$.count.value)
+    console.log('#', this.$.count.value)
     return 0
   }
 
@@ -57,13 +52,25 @@ class Private extends Store {
 const cms = MakeThing(Store)
   .privateAtoms(Private)
   .publicActions(
-    class extends Store {
-      publicLevel() {}
+    class extends Private {
+      publicLevel() {
+        this.age = 5
+        console.log('public action age', this.age)
+        console.log('public age.uid:::', this.$.age.uid)
+        console.log('public action secret', this.secret)
+        console.log('public action count', this.count)
+      }
     }
   )
   .constructor(body => {
-    console.log('body ho:::', body._)
+    console.log('body holy:::', body._)
+    console.log('body count:::', body.age.value)
+    console.log('body count:::', body.count.value)
+    console.log('body  .age.uid:::', body.age.uid)
 
+    body.age.up(v => {
+      console.log('body up age', v)
+    })
     return {
       nextLevel() {
         // body.publicLevel()
@@ -71,13 +78,20 @@ const cms = MakeThing(Store)
       },
     }
   })
-  .register()
-cms.age(5)
-cms.publicLevel()
-cms.nextLevel()
-cms.workMethod()
+  .multiRegister()
 
-console.log(':', cms._)
+cms(34).publicLevel()
+// const i =  cms(34)
+// cms.age.up(x => {
+//   console.log('grow up', x)
+// })
+// cms.count(2)
+// cms.publicLevel()
+//
+// cms.nextLevel()
+// cms.workMethod()
+
+// console.log(':', cms)
 // console.log({ cms })
 
 // class aliveModel extends Sens<aliveModel> {

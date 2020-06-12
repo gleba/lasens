@@ -27,10 +27,6 @@ export function getup(way: IWay, id?, target?) {
   const domain = id ? way.domain + '.' + id : way.domain
   const uid = makeRune(7)
   id = id || uid
-  const { holistic, proxyAtoms, actions, propDesk, children } = getSens(
-    way.thing,
-    domain
-  )
 
   const $ctxPublic = {
     id,
@@ -39,54 +35,60 @@ export function getup(way: IWay, id?, target?) {
   } as any
   if (target) $ctxPublic.target = target
 
-  const privateAtoms = way.privateThings
-    ? getSens(way.privateThings, `${domain}.private`).atoms
-    : {}
-  const deepAtoms = new Proxy(
-    {
-      proxy: proxyAtoms,
-      deep: children?.atoms ? children.atoms : Object.create(null),
-      think: privateAtoms,
-    },
-    thinkDeepProxy
+  let { holistic, atoms, proxyAtoms, bodyActions } = getSens(
+    way.thing,
+    domain,
+    $ctxPublic
   )
 
-  const deepCtx = {
-    $: deepAtoms,
-    _: holistic,
+  let privateThings = {} as any
+  if (way.privateThings) {
+    const privateThings = getSens(
+      way.privateThings,
+      `${domain}.private`,
+      $ctxPublic,
+      atoms,
+      bodyActions
+    )
+    if (privateThings.bodyActions) {
+      Object.assign(bodyActions, privateThings.bodyActions)
+    }
   }
-
-  const thisBodyCtx = Object.assign({}, deepCtx)
-  Object.keys($ctxPublic).forEach(k => {
-    thisBodyCtx[`$${k}`] = $ctxPublic[k]
-  })
-  const publicAction = way.publicAction
-    ? getSens(way.publicAction, `${domain}.public`).actions
-    : {}
-
-  const bodyActions: any = makeBodyAction(
-    thisBodyCtx,
-    deepAtoms,
-    Object.assign(actions, publicAction),
-    propDesk
-  )
-  const { _start } = bodyActions
-  _start && _start({ ...$ctxPublic, ...deepCtx })
+  if (way.publicAction) {
+    const p = getSens(
+      way.publicAction,
+      `${domain}.public`,
+      $ctxPublic,
+      atoms,
+      bodyActions
+    )
+    if (p.bodyActions) {
+      Object.assign(bodyActions, p.bodyActions)
+    }
+  }
+  // const { _start } = bodyActions
+  // _start && _start({ ...$ctxPublic, ...deepCtx })
 
   const think = { _: holistic, $: $ctxPublic }
-  const deep = bodyActions
+  // const deep = bodyActions
   if (way.constructor) {
     const lasActions = way.constructor(
-      new Proxy({ think, deep, proxy: deepAtoms }, thinkDeepProxy)
+      new Proxy({ think, deep: bodyActions, proxy: proxyAtoms }, thinkDeepProxy)
     )
-    lasActions && Object.assign(deep, lasActions)
+    lasActions && Object.assign(bodyActions, lasActions)
   }
 
+  let proxy = privateThings.atoms
+    ? new Proxy(
+        { protect: privateThings.atoms, atoms: proxyAtoms },
+        protectedAtomsProxy
+      )
+    : proxyAtoms
   return new Proxy(
     {
       think,
-      deep,
-      proxy: proxyAtoms,
+      deep: bodyActions,
+      proxy,
     },
     thinkDeepProxy
   )
@@ -95,6 +97,8 @@ export function getup(way: IWay, id?, target?) {
 function makeBodyAction(ctx, atoms, actions, desk) {
   const body = {}
   const proxy = new Proxy({ ctx, body, atoms }, bodyActionProxyHandlers)
+  // console.log({ atoms })
+
   actions &&
     Object.keys(actions).forEach(key => {
       // console.log('::', key)
@@ -120,7 +124,7 @@ export const addAtom = (key, body: any, domain?, value?) => {
   return atom
 }
 
-function getSens(thing: any, domain) {
+function getSens(thing: any, domain, ctx, inAtoms?, inActions?) {
   const atoms = {},
     propDesk = {} as KV<PropertyDescriptor>,
     actions = {}
@@ -145,28 +149,49 @@ function getSens(thing: any, domain) {
     )
   } else {
     instance = thing
-
     Object.keys(thing).forEach(key => {
       let value = thing[key]
       if (typeof value === 'function') actions[key] = value
       else addAtom(key, atoms, domain, value)
     })
   }
-  const { _private } = instance
-  const children = _private ? getSens(_private, `${domain}.private`) : null
+  // const { _private } = instance
+  const holistic = instance._ || {}
+  // const children = _private
+  //   ? getSens(_private, `${domain}.private`, ctx, deepAtoms, deepActions)
+  //   : null
+  inAtoms && Object.assign(inAtoms, atoms)
+  inActions && Object.assign(inActions, actions)
   const proxyAtoms = new Proxy(
-    { atoms, protect: children?.atoms, domain },
+    { atoms: inAtoms ? inAtoms : atoms, domain },
     atomsProxyHandler
-  )
+  ) as any
   isClass && decorate(proxyAtoms, isClass)
+  // deepAtoms = children?.atoms ? makeMix(proxyAtoms, children.atoms) : proxyAtoms
+  // deepActions = children?.actions
+  //   ? Object.assign({}, actions, children.actions)
+  //   : deepActions
+  const bodyActions: any = makeBodyAction(
+    {
+      $: proxyAtoms,
+      $id: ctx.id,
+      $uid: ctx.uid,
+      $target: ctx.target,
+      $domain: domain,
+      _: holistic,
+    },
+    proxyAtoms,
+    inActions ? inActions : actions,
+    propDesk
+  )
 
   return {
-    holistic: instance._ || {},
+    bodyActions,
     proxyAtoms,
     atoms,
     actions,
     propDesk,
-    children,
+    holistic,
   }
 }
 
@@ -178,9 +203,10 @@ function getSens(thing: any, domain) {
 // }
 const bodyActionProxyHandlers = {
   get({ ctx, body, atoms }, key) {
+    // console.log('::body', { body }, { atoms }, key)
     const v = ctx[key] || body[key]
     if (v) return v
-    return atoms[key]
+    return atoms[key].value
   },
   set({ ctx, body, atoms }, key, value) {
     const a = body[key] || atoms[key]
@@ -188,6 +214,22 @@ const bodyActionProxyHandlers = {
     return true
   },
 }
+const protectedAtomsProxy = {
+  get({ protect, atoms }, key) {
+    if (protect[key]) {
+      throw 'violation of the private area'
+    }
+    return atoms[key]
+  },
+}
+
+// const makeMix = (first, second) => new Proxy({ first, second }, mixProxy)
+// const mixProxy = {
+//   get({ first, second }, key) {
+//     return first[key] || second[key]
+//   },
+// }
+
 const thinkDeepProxy = {
   get({ proxy, deep, think }, key) {
     return think[key] || deep[key] || proxy[key]
@@ -195,10 +237,7 @@ const thinkDeepProxy = {
 }
 
 const atomsProxyHandler = {
-  get({ atoms, protect, domain }, key) {
-    if (protect && protect[key]) {
-      throw 'violation of the private area'
-    }
+  get({ atoms, domain }, key) {
     return atoms[key] || addAtom(key, atoms, domain)
   },
 }
