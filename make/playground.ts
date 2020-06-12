@@ -1,5 +1,18 @@
-import { LasDomain, MakeThing, Sens } from '../packages/sens/src'
+import {
+  LasDomain,
+  MakeThing,
+  Sens,
+  setCustomStorage,
+} from '../packages/sens/src'
 import { changeFx, qubit, stored } from '../packages/sens/src/decor'
+
+setCustomStorage({
+  init(atom: IAtom<any>): boolean {
+    console.log(atom.id)
+    return true
+  },
+  clear() {},
+})
 
 class Store extends Sens<Store> {
   // name: string
@@ -12,8 +25,8 @@ class Store extends Sens<Store> {
   _private = {
     mem: 5,
   }
-  _holistic = {
-    ok: 1,
+  _ = {
+    holy: 'stick',
   }
   _start(ln: LinkedThinkOf<Store, LasDomain>) {
     // console.log(ln.$.count)
@@ -45,9 +58,7 @@ const cms = MakeThing(Store)
   .privateAtoms(Private)
   .publicActions(
     class extends Store {
-      publicLevel() {
-
-      }
+      publicLevel() {}
     }
   )
   .constructor(body => {
@@ -63,5 +74,24 @@ cms.age(5)
 cms.publicLevel()
 cms.nextLevel()
 cms.workMethod()
-console.log(':')
+
+console.log(':', cms._)
 // console.log({ cms })
+
+// class aliveModel extends Sens<aliveModel> {
+//   stop: string
+//   nope() {}
+// }
+//
+// export const alive = MakeThing(aliveModel)
+//   .constructor(a => {
+//     return {
+//       zzz(rune, xid) {
+//         // console.log("-")
+//         // return db.get(rune)
+//       },
+//     }
+//   })
+//   .register()
+//
+// a

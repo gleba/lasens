@@ -10,8 +10,7 @@ export const primitiveExceptions = {
   [Symbol.toPrimitive]: true,
 }
 
-
-export function newRune(length:number):string {
+export function makeRune(length: number): string {
   let charset =
       'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
     i,
@@ -30,6 +29,8 @@ export function newRune(length:number):string {
     }
     return result
   } else {
-    return Buffer.alloc(length, require('crypto').randomBytes(length)).toString('hex')
+    return Buffer.alloc(length, require('crypto').randomBytes(length)).toString(
+      'hex'
+    )
   }
 }

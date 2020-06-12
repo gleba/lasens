@@ -1,6 +1,6 @@
 import { clearObject } from './utils'
 import { alive } from 'alak/atom/utils'
-import { XStorage } from './xstorage/xstorage'
+import { Storage } from './storage'
 import { addAtom } from './awake'
 
 enum Decor {
@@ -65,10 +65,9 @@ const delay = [] as any[]
 const getDecors = classCon =>
   decorModuleMap.has(classCon) ? decorModuleMap.get(classCon) : {}
 
-
 const decorImplement = {
-  [Decor.Stored]: (p, k)=>XStorage.init(p[k]),
-  [Decor.Atom]: (p,k)=> p[k]
+  [Decor.Stored]: (p, k) => Storage.init(p[k]),
+  [Decor.Atom]: (p, k) => p[k],
 }
 
 export function decorate(proxyAtoms, classCon) {
@@ -76,7 +75,7 @@ export function decorate(proxyAtoms, classCon) {
   Object.keys(decors).forEach(key => {
     const decor = decors[key]
     if (decor[Decor.Stored]) {
-      XStorage.init(proxyAtoms[key])
+      Storage.init(proxyAtoms[key])
     }
   })
 }

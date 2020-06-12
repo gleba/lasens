@@ -46,7 +46,7 @@ type LosHiddenSens = {
   $uid?: any
   $id?: any
   // $holistic?: any
-  _holistic?: any
+  // _holistic?: any
   _start?: AnyFunction
   _decay?: AnyFunction
   _private?: any
@@ -70,7 +70,7 @@ type Func = (args: any) => any
 
 type LosAtomsFrom<T> = T extends { atoms: any } ? T['atoms'] : any
 type LosActionsFrom<T> = T extends { actions: any } ? T['actions'] : any
-type LosHolyFrom<T> = T extends { _holistic: any } ? T['_holistic'] : any
+type LosHolyFrom<T> = T extends { _: any } ? T['_'] : any
 type LosPrivateFrom<T> = T extends { _private: any }
   ? LosAtomized<StyledThing<T['_private']>>
   : any
@@ -84,21 +84,21 @@ interface LinksTo<D> {
   actions: DomainActions<D>
 }
 
-type AtomizedSingleThing<X> = LosAtomized<RmFunc<X>> &
-  OnlyFunc<X> &
-  ShieldedThing<X>
+type AtomizedSingleThing<X> = LosClarify<X> &
+  LosAtomized<RmFunc<X>> &
+  PublicThing<X>
 
-interface ShieldedThing<X> {
+interface PublicThing<X> {
   $: {
     id: string
     uid: string | number
     domain: string
     target?: any
-    _?: LosHolyFrom<X>
   }
+  _?: LosHolyFrom<X>
 }
 
-interface AtomizedMultiThing<X> extends ShieldedThing<X> {
+interface AtomizedMultiThing<X> extends PublicThing<X> {
   (id: any): AtomizedSingleThing<X>
   remove(id: any): void
   broadcast: AtomizedSingleThing<X>
@@ -107,7 +107,7 @@ interface AtomizedMultiThing<X> extends ShieldedThing<X> {
 
 type BodySens<X> = LosAtomized<RmFunc<X>> &
   OnlyFunc<X> &
-  ShieldedThing<X> & {
+  PublicThing<X> & {
     _?: LosHolyFrom<X>
   }
 
@@ -122,29 +122,34 @@ interface CustomAction {
   newAction(): any
 }
 
-interface ExtendedPrivateAtoms<X> extends ExtendedActions<X, never> {
+interface ExtendedPrivateAtoms<X, P> extends ExtendedActions<X, P> {
   privateAtoms<P>(a: P): ExtendedActions<X, StyledThing<P>>
 }
+
 interface EdgeConstructor<X, P> extends LifeCycle<X> {
-  constructor<AO>(fn: (body: BodySens<X & P>) => AO): LifeCycle<X & AO>
+  constructor<AO>(
+    fn: (body: BodySens<X & P>) => UnpackedPromise<AO>
+  ): LifeCycle<X & AO>
 }
 
 interface ExtendedActions<X, P> extends EdgeConstructor<X, P> {
-  publicActions<AO>(actions: AO): EdgeConstructor<X & StyledThing<AO>, P>
+  publicActions<AO>(
+    actions: AO
+  ): EdgeConstructor<X & OnlyFunc<StyledThing<AO>>, P>
 }
 
-interface LifeCycle<X> extends TCStep<X> {
-  lifeCycle(options: LifeCycleOption): TCStep<X>
+interface LifeCycle<X> extends ExtendDomain<X> {
+  lifeCycle(options: LifeCycleOption): ExtendDomain<X>
 }
 interface TCFinalizeUp<X> {
   register(): AtomizedSingleThing<X>
   multiRegister(): AtomizedMultiThing<X>
 }
-interface TCStep<X> extends TCFinalizeUp<X> {
+interface ExtendDomain<X> extends TCFinalizeUp<X> {
   domain(namespace: string): TCFinalizeUp<X>
 }
 
-interface ThingConstructor<X> extends ExtendedPrivateAtoms<X>, TCStep<X> {}
+interface ThingConstructor<X> extends ExtendedPrivateAtoms<X, X> {}
 
 type StyledThing<T> = T extends ClassInstance ? ClassToKV<T> : T
 

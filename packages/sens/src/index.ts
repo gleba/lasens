@@ -7,9 +7,9 @@ export interface LasDomain {}
 export abstract class DomainSens<Thing, IDomain>
   implements ILaSensStore<Thing, LasDomain> {
   _decay?(): void
-  _?: LosPrivateFrom<Thing>
-  _private?: PrivateFlow
-  _holistic?: any
+  // _?: LosPrivateFrom<Thing>
+  // _private?: PrivateFlow
+  // _?: any
   $: LosAtomized<RmFunc<Thing>>
   $atoms?: DomainAtoms<IDomain>
   $actions?: DomainActions<IDomain>
@@ -33,7 +33,7 @@ export interface IWay {
 export function MakeThing<T>(thing: T): Thing<T> {
   const way: IWay = {
     thing,
-    domain: 'los',
+    domain: 'domain',
   }
   const finalSteeps = {
     register: () => register(way),
@@ -89,15 +89,14 @@ export interface IBox {
 }
 
 export { stored } from './decor'
-
-export { newRune } from './utils'
+export { setCustomStorage } from './storage'
+export { makeRune } from './utils'
 
 function multiRegister(way: IWay) {
   const activities = new Map()
   const register = A.stateless()
   function getter(target) {
-    let id, key
-    let uid = Math.random()
+    let key
     if (target) {
       switch (typeof target) {
         case 'string':
@@ -138,7 +137,7 @@ function register(way: IWay) {
 }
 
 const boxHandlers = {
-  get(box: IBox, p: PropertyKey, receiver: any): any {
+  get(box: IBox, p: PropertyKey): any {
     box.isSleep && box.wakeUp()
     return box.awakened[p]
   },

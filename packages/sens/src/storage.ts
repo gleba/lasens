@@ -3,10 +3,14 @@ import A from 'alak'
 let isBrowser = new Function(
   'try {return this===window;}catch(e){ return false;}'
 )
-
 let isServer = !isBrowser()
 
-export const XStorage = {
+type IStorage = {
+  init(atom: IAtom<any>): void
+  clear?(): void
+}
+
+const storage = {
   init(atom: IAtom<any>) {
     if (isServer) return false
     let v = localStorage.getItem(atom.id)
@@ -26,3 +30,16 @@ export const XStorage = {
     localStorage.clear()
   },
 }
+
+const current: any = {
+  store: storage,
+}
+export function setCustomStorage(store: IStorage) {
+  current.store = store
+}
+
+export const Storage = new Proxy(current, {
+  get(target: { store: any }, key): any {
+    return target.store[key]
+  },
+})

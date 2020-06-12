@@ -1,4 +1,4 @@
-import { IBox, IWay, newRune } from './index'
+import { IBox, IWay, makeRune } from './index'
 import { A } from 'alak'
 import {
   domainActions,
@@ -25,9 +25,9 @@ export function awake(box: IBox) {
 
 export function getup(way: IWay, id?, target?) {
   const domain = id ? way.domain + '.' + id : way.domain
-  const uid = newRune(7)
+  const uid = makeRune(7)
   id = id || uid
-  const { _holistic, proxyAtoms, actions, propDesk, children } = getSens(
+  const { holistic, proxyAtoms, actions, propDesk, children } = getSens(
     way.thing,
     domain
   )
@@ -45,7 +45,7 @@ export function getup(way: IWay, id?, target?) {
   const deepAtoms = new Proxy(
     {
       proxy: proxyAtoms,
-      deep: children.atoms,
+      deep: children?.atoms ? children.atoms : Object.create(null),
       think: privateAtoms,
     },
     thinkDeepProxy
@@ -53,7 +53,7 @@ export function getup(way: IWay, id?, target?) {
 
   const deepCtx = {
     $: deepAtoms,
-    _: _holistic,
+    _: holistic,
   }
 
   const thisBodyCtx = Object.assign({}, deepCtx)
@@ -85,7 +85,7 @@ export function getup(way: IWay, id?, target?) {
 
   return new Proxy(
     {
-      think: { _: _holistic, $: ctxPublic },
+      think: { _: holistic, $: ctxPublic },
       deep: bodyActions,
       proxy: proxyAtoms,
     },
@@ -120,35 +120,18 @@ export const addAtom = (key, body: any, domain?, value?) => {
   body[key] = atom
   return atom
 }
-// function privateSens(instance, domain) {
-//   const atoms = {}
-//   let sens
-//   if (typeof instance === 'function') {
-//     sens = new instance()
-//   } else {
-//     sens = instance
-//   }
-//   let privateDomain = `${domain}.private`
-//   Object.keys(sens).forEach(key =>
-//     addAtom(key, atoms, privateDomain, sens[key])
-//   )
-//   return atoms
-// }
-
-// const NaF = f => typeof f === 'function'
 
 function getSens(thing: any, domain) {
   const atoms = {},
     propDesk = {} as KV<PropertyDescriptor>,
     actions = {}
-  let instance,
-    isClass = false
+  let instance, isClass
 
   if (typeof thing === 'function') {
     instance = new thing()
-    isClass = true
     let protoOfInstance = Object.getPrototypeOf(instance)
     let methods = Object.getOwnPropertyNames(protoOfInstance)
+    isClass = protoOfInstance.constructor
     methods.shift()
     methods.forEach(key => {
       let opd = Object.getOwnPropertyDescriptor(protoOfInstance, key)
@@ -163,6 +146,7 @@ function getSens(thing: any, domain) {
     )
   } else {
     instance = thing
+
     Object.keys(thing).forEach(key => {
       let value = thing[key]
       if (typeof value === 'function') actions[key] = value
@@ -170,20 +154,15 @@ function getSens(thing: any, domain) {
     })
   }
   const { _private } = instance
-
-  // privateAtoms = privateSens(_private, domain)
-  // const publicAtoms = new Proxy({atoms, domain}, atomsProxyHandler)
-  // havePublicClass && decorate(publicAtoms, instance)
-  // havePrivateClass && decorate(privateAtoms, _private)
   const children = _private ? getSens(_private, `${domain}.private`) : null
   const proxyAtoms = new Proxy(
     { atoms, protect: children?.atoms, domain },
     atomsProxyHandler
   )
-  isClass && decorate(proxyAtoms, instance)
+  isClass && decorate(proxyAtoms, isClass)
 
   return {
-    _holistic: instance._holistic || {},
+    holistic: instance._ || {},
     proxyAtoms,
     atoms,
     actions,
@@ -192,12 +171,12 @@ function getSens(thing: any, domain) {
   }
 }
 
-const publicProxyHandlers = {
-  get({ body, atoms }, key) {
-    // console.log("public call", key)
-    return body[key] || atoms[key]
-  },
-}
+// const publicProxyHandlers = {
+//   get({ body, atoms }, key) {
+//     // console.log("public call", key)
+//     return body[key] || atoms[key]
+//   },
+// }
 const bodyActionProxyHandlers = {
   get({ ctx, body, atoms }, key) {
     const v = ctx[key] || body[key]
@@ -212,7 +191,6 @@ const bodyActionProxyHandlers = {
 }
 const thinkDeepProxy = {
   get({ proxy, deep, think }, key) {
-    // console.log({ proxy, deep, think })
     return think[key] || deep[key] || proxy[key]
   },
 }
