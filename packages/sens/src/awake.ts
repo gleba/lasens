@@ -32,12 +32,12 @@ export function getup(way: IWay, id?, target?) {
     domain
   )
 
-  const ctxPublic = {
+  const $ctxPublic = {
     id,
     uid,
     domain,
   } as any
-  if (target) ctxPublic.target = target
+  if (target) $ctxPublic.target = target
 
   const privateAtoms = way.privateThings
     ? getSens(way.privateThings, `${domain}.private`).atoms
@@ -57,8 +57,8 @@ export function getup(way: IWay, id?, target?) {
   }
 
   const thisBodyCtx = Object.assign({}, deepCtx)
-  Object.keys(ctxPublic).forEach(k => {
-    thisBodyCtx[`$${k}`] = ctxPublic[k]
+  Object.keys($ctxPublic).forEach(k => {
+    thisBodyCtx[`$${k}`] = $ctxPublic[k]
   })
   const publicAction = way.publicAction
     ? getSens(way.publicAction, `${domain}.public`).actions
@@ -71,22 +71,21 @@ export function getup(way: IWay, id?, target?) {
     propDesk
   )
   const { _start } = bodyActions
-  _start && _start({ ...ctxPublic, ...deepCtx })
+  _start && _start({ ...$ctxPublic, ...deepCtx })
 
+  const think = { _: holistic, $: $ctxPublic }
+  const deep = bodyActions
   if (way.constructor) {
     const lasActions = way.constructor(
-      new Proxy(
-        { think: ctxPublic, deep: bodyActions, proxy: deepAtoms },
-        thinkDeepProxy
-      )
+      new Proxy({ think, deep, proxy: deepAtoms }, thinkDeepProxy)
     )
-    lasActions && Object.assign(bodyActions, lasActions)
+    lasActions && Object.assign(deep, lasActions)
   }
 
   return new Proxy(
     {
-      think: { _: holistic, $: ctxPublic },
-      deep: bodyActions,
+      think,
+      deep,
       proxy: proxyAtoms,
     },
     thinkDeepProxy

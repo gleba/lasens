@@ -62,6 +62,8 @@ const cms = MakeThing(Store)
     }
   )
   .constructor(body => {
+    console.log('body ho:::', body._)
+
     return {
       nextLevel() {
         // body.publicLevel()

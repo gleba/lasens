@@ -127,9 +127,7 @@ interface ExtendedPrivateAtoms<X, P> extends ExtendedActions<X, P> {
 }
 
 interface EdgeConstructor<X, P> extends LifeCycle<X> {
-  constructor<AO>(
-    fn: (body: BodySens<X & P>) => UnpackedPromise<AO>
-  ): LifeCycle<X & AO>
+  constructor<AO>(fn: (body: BodySens<X & P>) => AO): LifeCycle<X & UnpackedPromise<AO>>
 }
 
 interface ExtendedActions<X, P> extends EdgeConstructor<X, P> {
