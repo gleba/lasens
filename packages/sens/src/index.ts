@@ -2,7 +2,7 @@
 import { awake, getup } from './awake'
 import { A } from 'alak'
 
-export interface LasDomain {}
+export interface DomainNamespaces {}
 
 export abstract class DomainSens<Thing, IDomain>
 // implements ILaSensStore<Thing, LasDomain>
@@ -12,13 +12,13 @@ export abstract class DomainSens<Thing, IDomain>
   // _private?: PrivateFlow
   // _?: any
   $: LosAtomized<RmFunc<Thing>>
-  $link?: IDomain
+  $ns?: IDomain
   $uid?: string | number
   $id?: string | number
   $target?: any
 }
 
-export abstract class Sens<Thing> extends DomainSens<Thing, LasDomain> {}
+export abstract class Sens<Thing> extends DomainSens<Thing, DomainNamespaces> {}
 
 export interface IWay {
   thing: any
@@ -118,6 +118,9 @@ function multiRegister(way: IWay) {
   getter.remove = () => {}
   getter.broadcast = () => {}
   getter.onNewRegistration = f => register.up(v => f(v.activity))
+  if (way.domain) {
+    ns[way.domain] = getter
+  }
   return getter as any
 }
 
@@ -133,7 +136,11 @@ function register(way: IWay) {
     box.isSleep = false
     box.awakened = awake(box)
   }
-  return new Proxy(box, boxHandlers) as any
+  let proxyBox = new Proxy(box, boxHandlers) as any
+  if (way.domain) {
+    ns[way.domain] = proxyBox
+  }
+  return proxyBox
 }
 
 const boxHandlers = {
@@ -141,9 +148,7 @@ const boxHandlers = {
     box.isSleep && box.wakeUp()
     return box.awakened[p]
   },
-  // set(box: IBox, p: PropertyKey, value: any, receiver: any): boolean {
-  //   box.isSleep && box.wakeUp()
-  //   box.awakened[p] = p
-  //   return true
-  // },
 }
+
+const ns: DomainNamespaces = {}
+export default ns

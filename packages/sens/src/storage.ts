@@ -12,6 +12,7 @@ type IStorage = {
 
 const storage = {
   init(atom: IAtom<any>) {
+    console.log('::store::', atom.id, atom.uid)
     if (isServer) return false
     let v = localStorage.getItem(atom.id)
     if (v && v != 'undefined') {
@@ -22,7 +23,9 @@ const storage = {
     atom.onClear(() => {
       localStorage.removeItem(atom.id)
     })
-    atom.up(v => localStorage.setItem(atom.id, JSON.stringify(v)))
+    atom.up(v => {
+      localStorage.setItem(atom.id, JSON.stringify(v))
+    })
   },
 
   clear() {
@@ -35,7 +38,7 @@ const current: any = {
   store: storage,
 }
 export function setCustomStorage(store: IStorage) {
-  current.store = store
+  // current.store = store
 }
 
 export const Storage = new Proxy(current, {

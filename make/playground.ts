@@ -1,5 +1,5 @@
 import {
-  LasDomain,
+  DomainNamespaces,
   MakeThing,
   Sens,
   setCustomStorage,
@@ -20,8 +20,6 @@ class Store extends Sens<Store> {
 
   // yes = 1
 
-  @stored age: number
-
   // _private = {
   //   mem: 5,
   // }
@@ -31,10 +29,11 @@ class Store extends Sens<Store> {
 
   //
   workMethod() {
-    this.age = 3
+    // this.age = 3
     console.log('## work ##')
     // console.log(":", this.)
     console.log('#', this.$.count.value)
+    // this.$ns.
     return 0
   }
 
@@ -45,32 +44,35 @@ class Store extends Sens<Store> {
 }
 // const classStore = MakeThing(X).domain('x').register()
 
-class Private extends Store {
+class Private {
   secret = true
+  @stored age: number
 }
 
 const cms = MakeThing(Store)
   .privateAtoms(Private)
-  .publicActions(
-    class extends Private {
-      publicLevel() {
-        this.age = 5
-        console.log('public action age', this.age)
-        console.log('public age.uid:::', this.$.age.uid)
-        console.log('public action secret', this.secret)
-        console.log('public action count', this.count)
-      }
-    }
-  )
+  // .publicActions(
+  //   class extends Private {
+  //     publicLevel() {
+  //       this.age = 5
+  //       console.log('public action age', this.age)
+  //       console.log('public age.uid:::', this.$.age.uid)
+  //       console.log('public action secret', this.secret)
+  //       // console.log('public action count', this.count)
+  //     }
+  //   }
+  // )
   .constructor(body => {
-    console.log('body holy:::', body._)
-    console.log('body count:::', body.age.value)
-    console.log('body count:::', body.count.value)
-    console.log('body  .age.uid:::', body.age.uid)
+    // console.log('body holy:::', body._)
+    // console.log('body count:::', body.age.value)
+    // console.log('body count:::', body.count.value)
+    // console.log('body  .age.uid:::', body.age.uid)
+    console.log('body:', body.age.id, body.age.uid)
 
-    body.age.up(v => {
-      console.log('body up age', v)
-    })
+    // body.age.up(v => {
+    //   console.log('body up age', v)
+    // })
+
     return {
       nextLevel() {
         // body.publicLevel()
@@ -78,9 +80,15 @@ const cms = MakeThing(Store)
       },
     }
   })
-  .multiRegister()
+  .lifeCycle({
+    immediatelyStart: true,
+  })
+  .register()
 
-cms(34).publicLevel()
+// console.log(':::', cms.age.uid)
+// cms.age(5)
+
+// cms(34).publicLevel()
 // const i =  cms(34)
 // cms.age.up(x => {
 //   console.log('grow up', x)

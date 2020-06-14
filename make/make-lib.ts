@@ -10,7 +10,7 @@ const { log } = console
 
 const distPath = path.resolve('dist')
 
-export const makeLib = async () => {
+export const makeLib = async (packageName?) => {
   info('compiling typescript packages...')
   rm(distPath)
   await executeCommand(
@@ -30,6 +30,11 @@ export const makeLib = async () => {
     } else {
       if (name.slice(-5) === '.d.ts') {
         let pakName = p.split(`dist${path.sep}packages`)[1].split(path.sep)[1]
+        if (packageName && packageName != pakName) {
+          console.log({ packageName }, pakName)
+          rm(fp)
+          return
+        }
         if (!defPacks[pakName]) defPacks[pakName] = []
         defPacks[pakName].push(readFileSync(fp).toString())
         console.log('+/-', pakName, name)

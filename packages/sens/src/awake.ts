@@ -45,7 +45,7 @@ export function getup(way: IWay, id?, target?) {
   if (way.privateThings) {
     const privateThings = getSens(
       way.privateThings,
-      `${domain}.private`,
+      domain,
       $ctxPublic,
       atoms,
       bodyActions
@@ -55,13 +55,7 @@ export function getup(way: IWay, id?, target?) {
     }
   }
   if (way.publicAction) {
-    const p = getSens(
-      way.publicAction,
-      `${domain}.public`,
-      $ctxPublic,
-      atoms,
-      bodyActions
-    )
+    const p = getSens(way.publicAction, domain, $ctxPublic, atoms, bodyActions)
     if (p.bodyActions) {
       Object.assign(bodyActions, p.bodyActions)
     }

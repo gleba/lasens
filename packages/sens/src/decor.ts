@@ -11,6 +11,7 @@ enum Decor {
   Wrapper = 'wrapper',
   Change = 'change',
   Atom = 'atom',
+  Portal = 'portal',
 }
 const decorModuleMap = new Map()
 
@@ -59,23 +60,28 @@ export const changeFx = decorFx(Decor.Change)
 export const stored = decorBase(Decor.Stored)
 export const atom = decorBase(Decor.Atom)
 export const qubit = decorBase(Decor.Alive)
-export const holistic = decorBase(Decor.Alive)
+export const portal = decorBase(Decor.Alive)
 const delay = [] as any[]
 
 const getDecors = classCon =>
   decorModuleMap.has(classCon) ? decorModuleMap.get(classCon) : {}
 
 const decorImplement = {
-  [Decor.Stored]: (p, k) => Storage.init(p[k]),
-  [Decor.Atom]: (p, k) => p[k],
+  [Decor.Stored]: atom => Storage.init(atom),
+  [Decor.Portal](atom: IAtom<any>) {
+    atom.stateless(true)
+    atom.holistic(true)
+  },
 }
 
 export function decorate(proxyAtoms, classCon) {
-  const decors = getDecors(classCon)
-  Object.keys(decors).forEach(key => {
-    const decor = decors[key]
-    if (decor[Decor.Stored]) {
-      Storage.init(proxyAtoms[key])
-    }
+  const classDecors = getDecors(classCon)
+  Object.keys(classDecors).forEach(key => {
+    const decors = classDecors[key]
+    const atom = proxyAtoms[key]
+    Object.keys(decors).forEach(decor => {
+      const decorFn = decorImplement[decor]
+      decorFn && decorFn(atom)
+    })
   })
 }
