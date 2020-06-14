@@ -1,9 +1,4 @@
-import {
-  DomainNamespaces,
-  MakeThing,
-  Sens,
-  setCustomStorage,
-} from '../packages/sens/src'
+import { NS, MakeThing, setCustomStorage, Sens } from '../packages/sens/src'
 import { changeFx, qubit, stored } from '../packages/sens/src/decor'
 
 setCustomStorage({
@@ -33,7 +28,7 @@ class Store extends Sens<Store> {
     console.log('## work ##')
     // console.log(":", this.)
     console.log('#', this.$.count.value)
-    // this.$ns.
+    this.$ns
     return 0
   }
 
@@ -63,6 +58,7 @@ const cms = MakeThing(Store)
   //   }
   // )
   .constructor(body => {
+    // body
     // console.log('body holy:::', body._)
     // console.log('body count:::', body.age.value)
     // console.log('body count:::', body.count.value)
@@ -83,7 +79,14 @@ const cms = MakeThing(Store)
   .lifeCycle({
     immediatelyStart: true,
   })
+  .domain('cms')
   .register()
+
+// declare module '../packages/sens/src' {
+//   export interface NS {
+//     cmzs: typeof cms
+//   }
+// }
 
 // console.log(':::', cms.age.uid)
 // cms.age(5)
@@ -119,3 +122,13 @@ const cms = MakeThing(Store)
 //   .register()
 //
 // a
+
+// interface Todo {
+//   title: string
+//   description: string
+//   completed: boolean
+// }
+//
+// const todo: NS //RmType<NS, Thing<Store>>
+//
+// todo

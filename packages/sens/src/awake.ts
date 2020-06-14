@@ -1,4 +1,4 @@
-import { IBox, IWay, makeRune } from './index'
+import ns, { IBox, IWay, makeRune } from './index'
 import { A } from 'alak'
 import {
   domainActions,
@@ -67,7 +67,11 @@ export function getup(way: IWay, id?, target?) {
   // const deep = bodyActions
   if (way.constructor) {
     const lasActions = way.constructor(
-      new Proxy({ think, deep: bodyActions, proxy: proxyAtoms }, thinkDeepProxy)
+      new Proxy(
+        { think, deep: bodyActions, proxy: proxyAtoms },
+        thinkDeepProxy
+      ),
+      ns
     )
     lasActions && Object.assign(bodyActions, lasActions)
   }

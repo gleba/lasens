@@ -2,23 +2,23 @@
 import { awake, getup } from './awake'
 import { A } from 'alak'
 
-export interface DomainNamespaces {}
+export interface NS {}
 
-export abstract class DomainSens<Thing, IDomain>
+export abstract class DomainSens<T, IDomain>
 // implements ILaSensStore<Thing, LasDomain>
 {
   // _decay?(): void
   // _?: LosPrivateFrom<Thing>
   // _private?: PrivateFlow
   // _?: any
-  $: LosAtomized<RmFunc<Thing>>
-  $ns?: IDomain
+  $: LosAtomized<RmFunc<T>>
+  $ns?: NS //RmType<NS, Thing<T>>
   $uid?: string | number
   $id?: string | number
   $target?: any
 }
 
-export abstract class Sens<Thing> extends DomainSens<Thing, DomainNamespaces> {}
+export abstract class Sens<Thing> extends DomainSens<Thing, NS> {}
 
 export interface IWay {
   thing: any
@@ -30,7 +30,7 @@ export interface IWay {
   constructor?: any
 }
 
-export function MakeThing<T>(thing: T): Thing<T> {
+export function MakeThing<T>(thing: T): MiddleThink<T> {
   const way: IWay = {
     thing,
     domain: 'domain',
@@ -53,7 +53,7 @@ export function MakeThing<T>(thing: T): Thing<T> {
       }
     },
     ...finalSteeps,
-  } as Thing<T>
+  } as MiddleThink<T>
   function constructor(f) {
     way.constructor = f
     return middleSteps
@@ -150,5 +150,5 @@ const boxHandlers = {
   },
 }
 
-const ns: DomainNamespaces = {}
+const ns: NS = {}
 export default ns
