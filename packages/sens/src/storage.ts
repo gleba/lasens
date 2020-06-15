@@ -41,6 +41,9 @@ export function setCustomStorage(store: IStorage) {
   // current.store = store
 }
 
+/**
+ * @internal
+ */
 export const Storage = new Proxy(current, {
   get(target: { store: any }, key): any {
     return target.store[key]

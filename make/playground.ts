@@ -1,5 +1,5 @@
-import { NS, MakeThing, setCustomStorage, Sens } from '../packages/sens/src'
-import { changeFx, qubit, stored } from '../packages/sens/src/decor'
+import { MakeThing, Sens } from '../packages/sens/src'
+import { stored, sync } from '../packages/sens/src/decor'
 
 setCustomStorage({
   init(atom: IAtom<any>): boolean {
@@ -11,6 +11,7 @@ setCustomStorage({
 
 class Store extends Sens<Store> {
   // name: string
+
   count = 1
 
   // yes = 1

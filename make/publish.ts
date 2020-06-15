@@ -15,8 +15,7 @@ export async function publish(name) {
     packageJSON.version = newVer
     writeFileSync(sourcePath, JSON.stringify(packageJSON, null, 4))
   }
-
-  await makeLib()
+  await makeLib(name)
   writeFileSync(
     `./dist/packages/${name}/package.json`,
     JSON.stringify(packageJSON, null, 2)
@@ -40,5 +39,5 @@ export async function link(name) {
     `./dist/packages/${name}/package.json`,
     JSON.stringify(packageJSON, null, 2)
   )
-  await executeCommand('npm link', `./dist/packages/${name}`)
+  // await executeCommand('npm link', `./dist/packages/${name}`)
 }

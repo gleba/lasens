@@ -1,0 +1,17 @@
+{
+    "name": "a-react",
+    "version": "0.2.0-next.13",
+    "main": "index.js",
+    "typings": "index.d.ts",
+    "description": "react hooks for atoms alak and lasens",
+    "files": [
+        "/src",
+        "index.d.ts",
+        "global.d.ts"
+    ],
+    "devDependencies": {
+        "alak": "latest",
+        "lasens": "latest"
+    },
+    "dependencies": {}
+}

@@ -88,10 +88,6 @@ export interface IBox {
   awakened?: any
 }
 
-export { stored } from './decor'
-export { setCustomStorage } from './storage'
-export { makeRune } from './utils'
-
 function multiRegister(way: IWay) {
   const activities = new Map()
   const register = A.stateless()
@@ -150,5 +146,9 @@ const boxHandlers = {
   },
 }
 
+// export { stored } from './decor'
+// export { setCustomStorage } from './storage'
+
+export { makeRune } from './utils'
 const ns: NS = {}
 export default ns

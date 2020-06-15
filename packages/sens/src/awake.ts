@@ -1,11 +1,8 @@
+/**
+ * @internal-all
+ */
 import ns, { IBox, IWay, makeRune } from './index'
 import { A } from 'alak'
-import {
-  domainActions,
-  domainAtoms,
-  domainLink,
-  registerBodyDomain,
-} from './domain'
 import { decorate } from './decor'
 
 const systemFields = {
@@ -158,7 +155,12 @@ function getSens(thing: any, domain, ctx, inAtoms?, inActions?) {
   // const children = _private
   //   ? getSens(_private, `${domain}.private`, ctx, deepAtoms, deepActions)
   //   : null
-  inAtoms && Object.assign(inAtoms, atoms)
+  inAtoms &&
+    Object.keys(atoms).forEach(k => {
+      let a = inAtoms[k]
+      if (a && a.value) return
+      inAtoms[k] = atoms[k]
+    })
   inActions && Object.assign(inActions, actions)
   const proxyAtoms = new Proxy(
     { atoms: inAtoms ? inAtoms : atoms, domain },
