@@ -60,17 +60,30 @@ export function getup(way: IWay, id?, target?) {
   // const { _start } = bodyActions
   // _start && _start({ ...$ctxPublic, ...deepCtx })
 
-  const think = { _: holistic, $: $ctxPublic }
+  const __ = {} as any
+  const think = { _: holistic, $: $ctxPublic, __ }
   // const deep = bodyActions
   if (way.constructor) {
-    const lasActions = way.constructor(
+    let lasActions = way.constructor(
       new Proxy(
         { think, deep: bodyActions, proxy: proxyAtoms },
         thinkDeepProxy
       ),
       ns
     )
-    lasActions && Object.assign(bodyActions, lasActions)
+    const mixInBody = v => {
+      v && Object.assign(bodyActions, v)
+    }
+    if (lasActions.then) {
+      __.nowPromise = lasActions
+      lasActions.then(v => {
+        // console.log('done 1')
+        // delete __.nowPromise
+        mixInBody(v)
+      })
+    } else {
+      mixInBody(lasActions)
+    }
   }
 
   let proxy = privateThings.atoms
@@ -92,11 +105,9 @@ export function getup(way: IWay, id?, target?) {
 function makeBodyAction(ctx, atoms, actions, desk) {
   const body = {}
   const proxy = new Proxy({ ctx, body, atoms }, bodyActionProxyHandlers)
-  // console.log({ atoms })
 
   actions &&
     Object.keys(actions).forEach(key => {
-      // console.log('::', key)
       body[key] = actions[key].bind(proxy)
     })
   desk &&
@@ -167,10 +178,6 @@ function getSens(thing: any, domain, ctx, inAtoms?, inActions?) {
     atomsProxyHandler
   ) as any
   isClass && decorate(proxyAtoms, isClass)
-  // deepAtoms = children?.atoms ? makeMix(proxyAtoms, children.atoms) : proxyAtoms
-  // deepActions = children?.actions
-  //   ? Object.assign({}, actions, children.actions)
-  //   : deepActions
   const bodyActions: any = makeBodyAction(
     {
       $: proxyAtoms,

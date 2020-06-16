@@ -1,13 +1,14 @@
 import { MakeThing, Sens } from '../packages/sens/src'
 import { stored, sync } from '../packages/sens/src/decor'
+import { setCustomStorage } from '../packages/sens/src/storage'
 
-setCustomStorage({
-  init(atom: IAtom<any>): boolean {
-    console.log(atom.id)
-    return true
-  },
-  clear() {},
-})
+// setCustomStorage({
+//   init(atom: IAtom<any>): {
+//
+//     // return new Promise(done=>done(""))
+//   },
+//   clear() {},
+// })
 
 class Store extends Sens<Store> {
   // name: string
@@ -29,7 +30,7 @@ class Store extends Sens<Store> {
     console.log('## work ##')
     // console.log(":", this.)
     console.log('#', this.$.count.value)
-    this.$ns
+    // this.$ns
     return 0
   }
 
@@ -42,7 +43,7 @@ class Store extends Sens<Store> {
 
 class Private {
   secret = true
-  @stored age: number
+  age: number
 }
 
 const cms = MakeThing(Store)
@@ -58,7 +59,7 @@ const cms = MakeThing(Store)
   //     }
   //   }
   // )
-  .constructor(body => {
+  .constructor(async body => {
     // body
     // console.log('body holy:::', body._)
     // console.log('body count:::', body.age.value)
@@ -70,9 +71,15 @@ const cms = MakeThing(Store)
     //   console.log('body up age', v)
     // })
 
+    console.log('we are waiting')
+    await new Promise(done => {
+      setTimeout(done, 500)
+    })
+    console.log('ext')
     return {
-      nextLevel() {
+      nextLevel(a: string) {
         // body.publicLevel()
+        console.log({ a })
         console.log('next level', body.secret.value)
       },
     }
@@ -81,7 +88,18 @@ const cms = MakeThing(Store)
     immediatelyStart: true,
   })
   .domain('cms')
-  .register()
+  .multiRegister()
+
+async function test() {
+  // console.log(':1')
+  let p = cms.solid(2)
+  // console.log({ p })
+  let x = await p
+  console.log('test 2')
+  x.nextLevel('yes')
+  console.log('test 3')
+}
+test()
 
 // declare module '../packages/sens/src' {
 //   export interface NS {

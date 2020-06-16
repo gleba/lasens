@@ -38,7 +38,7 @@ const current: any = {
   store: storage,
 }
 export function setCustomStorage(store: IStorage) {
-  // current.store = store
+  current.store = store
 }
 
 /**

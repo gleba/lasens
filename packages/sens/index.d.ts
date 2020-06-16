@@ -101,6 +101,7 @@ interface MultiThing<X> extends PublicThing<X> {
   (id: any): Thing<X>
   remove(id: any): void
   broadcast: Thing<X>
+  solid(id: any): Promise<Thing<X>>
   onNewRegistration(listener: (thing: Thing<X>) => void)
 }
 

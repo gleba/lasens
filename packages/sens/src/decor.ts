@@ -99,7 +99,6 @@ export function decorate(proxyAtoms, classCon) {
   Object.keys(classDecors).forEach(key => {
     const decors = classDecors[key]
     const atom = proxyAtoms[key]
-    console.log({ decors })
     Object.keys(decors).forEach(decor => {
       const decorFn = decorImplement[decor]
       const decorFx = decors[decor]

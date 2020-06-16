@@ -1,17 +1,16 @@
 {
     "name": "a-react",
-    "version": "0.2.0-next.13",
+    "version": "0.2.0-next.14",
     "main": "index.js",
     "typings": "index.d.ts",
-    "description": "react hooks for atoms alak and lasens",
+    "description": "react hooks for alak atoms",
     "files": [
         "/src",
         "index.d.ts",
         "global.d.ts"
     ],
     "devDependencies": {
-        "alak": "latest",
-        "lasens": "latest"
+        "alak": "latest"
     },
     "dependencies": {}
 }

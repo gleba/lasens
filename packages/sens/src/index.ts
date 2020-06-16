@@ -114,6 +114,17 @@ function multiRegister(way: IWay) {
   getter.remove = () => {}
   getter.broadcast = () => {}
   getter.onNewRegistration = f => register.up(v => f(v.activity))
+  getter.solid = target => {
+    const instance = getter(target)
+    if (instance.__.nowPromise) {
+      return new Promise(resolve =>
+        instance.__.nowPromise.then(() =>
+          resolve(new Proxy(instance, thenHandler))
+        )
+      )
+    }
+    return instance
+  }
   if (way.domain) {
     ns[way.domain] = getter
   }
@@ -137,6 +148,14 @@ function register(way: IWay) {
     ns[way.domain] = proxyBox
   }
   return proxyBox
+}
+
+const thenHandler = {
+  get(o, k) {
+    console.log('::thenH', k)
+    if (k == 'then') return o
+    return o[k]
+  },
 }
 
 const boxHandlers = {

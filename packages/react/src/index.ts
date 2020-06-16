@@ -7,22 +7,31 @@
  */
 
 // @ts-ignore
-import { useEffect, useState } from 'react'
+import { useMemo , useEffect, useState } from 'react'
+
 
 export function useSyncAtom<T>(atom: IAtom<T>): T {
-  const [state, mutate] = useState(atom())
+  const [state, mutate] = useState(atom.value)
+  const mutator = v => mutate(v)
+  useMemo(() => {
+    atom()
+  }, [])
   useEffect(() => {
-    atom.up(mutate)
-    return () => atom.down(mutate)
-  }, [atom])
+    atom.up(mutator)
+    return () => {
+      atom.down(mutator)
+    }
+  }, [])
   return state
 }
-
 export function useAtom<T>(atom: IAtom<T>): T {
   const [state, mutate] = useState(atom.value)
+  const mutator = v => mutate(v)
   useEffect(() => {
-    atom.up(mutate)
-    return () => atom.down(mutate)
-  }, [atom])
+    atom.up(mutator)
+    return () => {
+      atom.down(mutator)
+    }
+  }, [])
   return state
 }
