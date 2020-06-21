@@ -1,6 +1,6 @@
 {
     "name": "a-react",
-    "version": "0.2.0-next.14",
+    "version": "0.2.0-next.15",
     "main": "index.js",
     "typings": "index.d.ts",
     "description": "react hooks for alak atoms",

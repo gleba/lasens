@@ -9,6 +9,10 @@
 // @ts-ignore
 import { useMemo , useEffect, useState } from 'react'
 
+export const UiSyncAtom = {
+  add : "sync-add",
+  remove : "sync-remove"
+}
 
 export function useSyncAtom<T>(atom: IAtom<T>): T {
   const [state, mutate] = useState(atom.value)
@@ -17,9 +21,12 @@ export function useSyncAtom<T>(atom: IAtom<T>): T {
     atom()
   }, [])
   useEffect(() => {
+    let id = Math.random()
     atom.up(mutator)
+    atom.dispatch(UiSyncAtom.add, id)
     return () => {
       atom.down(mutator)
+      atom.dispatch(UiSyncAtom.remove, id)
     }
   }, [])
   return state
