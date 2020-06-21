@@ -12,7 +12,6 @@ type IStorage = {
 
 const storage = {
   init(atom: IAtom<any>) {
-    console.log('::store::', atom.id, atom.uid)
     if (isServer) return false
     let v = localStorage.getItem(atom.id)
     if (v && v != 'undefined') {

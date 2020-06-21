@@ -152,7 +152,6 @@ function register(way: IWay) {
 
 const thenHandler = {
   get(o, k) {
-    console.log('::thenH', k)
     if (k == 'then') return o
     return o[k]
   },

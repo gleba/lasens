@@ -67,14 +67,14 @@ const decorBase = (decor: Decor) => (
 
 export const stored = decorBase(Decor.Stored)
 export const portal = decorBase(Decor.Portal)
-export const sync = decorFx(Decor.Sync) as (key: string) => PropertyDecorator
+export const sync = decorBase(Decor.Sync) // as (key?: string) => PropertyDecorator
 const delay = [] as any[]
 
 const getDecors = classCon =>
   decorModuleMap.has(classCon) ? decorModuleMap.get(classCon) : {}
 
 let syncFx = null
-function addSyncHandler(handler: (atom: IAtom<any>, key: string) => void) {
+export function addSyncHandler(handler: (atom: IAtom<any>, key: string) => void) {
   syncFx = handler
 }
 const decorImplement = {

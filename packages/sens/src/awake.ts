@@ -74,15 +74,16 @@ export function getup(way: IWay, id?, target?) {
     const mixInBody = v => {
       v && Object.assign(bodyActions, v)
     }
-    if (lasActions.then) {
-      __.nowPromise = lasActions
-      lasActions.then(v => {
-        // console.log('done 1')
-        // delete __.nowPromise
-        mixInBody(v)
-      })
-    } else {
-      mixInBody(lasActions)
+    if (lasActions) {
+      if (lasActions.then) {
+        __.nowPromise = lasActions
+        lasActions.then(v => {
+          delete __.nowPromise
+          mixInBody(v)
+        })
+      } else {
+        mixInBody(lasActions)
+      }
     }
   }
 
@@ -202,15 +203,8 @@ function getSens(thing: any, domain, ctx, inAtoms?, inActions?) {
   }
 }
 
-// const publicProxyHandlers = {
-//   get({ body, atoms }, key) {
-//     // console.log("public call", key)
-//     return body[key] || atoms[key]
-//   },
-// }
 const bodyActionProxyHandlers = {
   get({ ctx, body, atoms }, key) {
-    // console.log('::body', { body }, { atoms }, key)
     const v = ctx[key] || body[key]
     if (v) return v
     return atoms[key].value
