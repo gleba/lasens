@@ -8,8 +8,9 @@ import { decorate } from './decor'
 const systemFields = {
   _start: true as any,
   _decay: true as any,
-  _private: true as any,
-  _holistic: true as any,
+  // _private: true as any,
+  // _holistic: true as any,
+  _: true as any,
   body: true as any,
 }
 
