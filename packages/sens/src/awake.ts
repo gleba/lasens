@@ -4,6 +4,7 @@
 import ns, { IBox, IWay, makeRune } from './index'
 import { A } from 'alak'
 import { decorate } from './decor'
+import { alive } from 'alak/atom/utils'
 
 const systemFields = {
   _start: true as any,
@@ -11,7 +12,7 @@ const systemFields = {
   // _private: true as any,
   // _holistic: true as any,
   _: true as any,
-  body: true as any,
+  // body: true as any,
 }
 
 export function awake(box: IBox) {
@@ -124,7 +125,10 @@ function makeBodyAction(ctx, atoms, actions, desk) {
 }
 
 export const addAtom = (key, body: any, domain?, value?) => {
-  if (systemFields[key]) throw 'system field in atom'
+  if (systemFields[key]) {
+    console.error(`${key} is not allowed`)
+    throw 'system field in atom'
+  }
   const atom = value ? A(value) : A()
   atom.setId(domain + '.' + key)
   atom.setName(key)
@@ -132,6 +136,7 @@ export const addAtom = (key, body: any, domain?, value?) => {
   return atom
 }
 
+const isDefined = v => v != undefined
 function getSens(thing: any, domain, ctx, inAtoms?, inActions?) {
   const atoms = {},
     propDesk = {} as KV<PropertyDescriptor>,
@@ -171,7 +176,7 @@ function getSens(thing: any, domain, ctx, inAtoms?, inActions?) {
   inAtoms &&
     Object.keys(atoms).forEach(k => {
       let a = inAtoms[k]
-      if (a && a.value) return
+      if (a && isDefined(a.value)) return
       inAtoms[k] = atoms[k]
     })
   inActions && Object.assign(inActions, actions)
@@ -211,6 +216,10 @@ const bodyActionProxyHandlers = {
     return atoms[key].value
   },
   set({ ctx, body, atoms }, key, value) {
+    if (key === "_") {
+      body._ = value
+      return true
+    }
     const a = body[key] || atoms[key]
     a(value)
     return true

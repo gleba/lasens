@@ -27,6 +27,8 @@ export function makeRune(length: number): string {
       }
       return result
     }
+    result += charset[Math.floor(Math.random() * (charset.length-10))]
+    length--
     for (i = 0; i < length; i++) {
       result += charset[Math.floor(Math.random() * charset.length)]
     }

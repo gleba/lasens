@@ -41,32 +41,33 @@ class Store extends Sens<Store> {
 }
 // const classStore = MakeThing(X).domain('x').register()
 
-class Private {
+class Private extends Sens<Private>{
   secret = true
   age: number
 }
 
 const cms = MakeThing(Store)
   .privateAtoms(Private)
-  // .publicActions(
-  //   class extends Private {
-  //     publicLevel() {
-  //       this.age = 5
-  //       console.log('public action age', this.age)
-  //       console.log('public age.uid:::', this.$.age.uid)
-  //       console.log('public action secret', this.secret)
-  //       // console.log('public action count', this.count)
-  //     }
-  //   }
-  // )
+  .publicActions(
+    class extends Private {
+      publicLevel() {
+        this.age = 5
+        console.log('public action age', this.age)
+        console.log('public age.uid:::', this.$.age.uid)
+        console.log('public action secret', this.secret)
+        // console.log('public action count', this.count)
+      }
+    }
+  )
   .constructor(async body => {
     // body
     // console.log('body holy:::', body._)
     // console.log('body count:::', body.age.value)
     // console.log('body count:::', body.count.value)
     // console.log('body  .age.uid:::', body.age.uid)
-    console.log('body:', body.age.id, body.age.uid)
+    // console.log('body:', body.age.id, body.age.uid)
 
+    body.publicLevel()
     // body.age.up(v => {
     //   console.log('body up age', v)
     // })

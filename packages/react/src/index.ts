@@ -18,10 +18,6 @@ export const UiSyncAtom = {
 export function useSyncAtom<T>(atom: IAtom<T>): T {
   const [state, mutate] = useState(atom.value)
   const mutator = v => mutate(v)
-  // useMemo(() => {
-  //   atom()
-  //
-  // }, [])
   useEffect(() => {
     let id = Math.random()
     atom.up(mutator)
@@ -32,7 +28,7 @@ export function useSyncAtom<T>(atom: IAtom<T>): T {
       atom.dispatch(UiSyncAtom.remove, id)
       atom.parents && atom.parents.forEach(a=>a.dispatch(UiSyncAtom.remove, id))
     }
-  }, [])
+  }, [atom])
   return state
 }
 
@@ -44,6 +40,6 @@ export function useAtom<T>(atom: IAtom<T>): T {
     return () => {
       atom.down(mutator)
     }
-  }, [])
+  }, [atom])
   return state
 }
