@@ -111,8 +111,19 @@ function multiRegister(way: IWay) {
     register({ activity })
     return activity
   }
-  getter.remove = () => {}
-  getter.broadcast = () => {}
+
+  getter.remove = (key) => {
+    activities.has(key) && activities.delete(key)
+  }
+
+  getter.broadcast = new Proxy({}, {
+    get(target: {}, p: PropertyKey, receiver: any): any {
+      return (...args)=> activities.forEach(activity=> {
+        activity[p](...args)
+      })
+    }
+  })
+
   getter.onNewRegistration = f => register.up(v => f(v.activity))
   getter.solid = target => {
     const instance = getter(target)
@@ -128,6 +139,10 @@ function multiRegister(way: IWay) {
   if (way.domain) {
     ns[way.domain] = getter
   }
+  // if (way.lifeCycle) {
+  //   way.lifeCycle.decayByInactivity
+  //
+  // }
   return getter as any
 }
 

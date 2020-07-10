@@ -93,12 +93,15 @@ const cms = MakeThing(Store)
 
 async function test() {
   // console.log(':1')
-  let p = cms.solid(2)
-  // console.log({ p })
-  let x = await p
-  console.log('test 2')
-  x.nextLevel('yes')
-  console.log('test 3')
+  cms(1)
+  // cms.solid(2)
+  // // console.log({ p })
+  // let x = await p
+  // console.log('test 2')
+  // x.nextLevel('yes')
+  // console.log('test 3')
+  // cms.broadcast.publicLevel()
+  cms.broadcast.publicLevel()
 }
 test()
 
