@@ -681,10 +681,10 @@ ajv@^6.5.5:
     json-schema-traverse "^0.4.1"
     uri-js "^4.2.2"
 
-alak@^3.0.0-alpha.3:
-  version "3.0.0-alpha.3"
-  resolved "https://registry.yarnpkg.com/alak/-/alak-3.0.0-alpha.3.tgz#1b4c4c0b9c70e6c6667814f71854e4b03a8b5a4a"
-  integrity sha512-MCClY1Etb2AbukWN4rT5szjckSc36UT9bG9jIuNJC4nOH5jUBzxT7dK1CfX44m1xUZ3XWfjm5oohV8eChD1mfQ==
+alak@^3.0.0-alpha.11:
+  version "3.0.0-alpha.21"
+  resolved "https://registry.yarnpkg.com/alak/-/alak-3.0.0-alpha.21.tgz#774935e614f5d49aee1f5469337f663785b60cf8"
+  integrity sha512-unzMX998lgrhwS8GKa/ZzlhD+ZPrQnVfRu5qZYI2ogLwTdhx+0VziEvfFUZ+eFchISB9Vw3188hEWKVz47WvJQ==
 
 ansi-escapes@^4.2.1:
   version "4.3.1"
@@ -2534,11 +2534,6 @@ kleur@^3.0.3:
   resolved "https://registry.yarnpkg.com/kleur/-/kleur-3.0.3.tgz#a79c9ecc86ee1ce3fa6206d1216c501f147fc07e"
   integrity sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w==
 
-lasens@^0.2.0-next.0:
-  version "0.2.0-next.0"
-  resolved "https://registry.yarnpkg.com/lasens/-/lasens-0.2.0-next.0.tgz#474d459011729842ac2a049d2a2bdfcb2e1be26b"
-  integrity sha512-YEAiMDGwZaub0GRSegtTLLezO2LhjnnS/kxxKzl6OiBHN0c5Sis8RGNcHWu6jfU5fu44T+eTTfsDp3DOtEAnNA==
-
 leven@^3.1.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/leven/-/leven-3.1.0.tgz#77891de834064cccba82ae7842bb6b14a13ed7f2"
@@ -2575,9 +2570,9 @@ lodash.sortby@^4.7.0:
   integrity sha1-7dFMgk4sycHgsKG0K7UhBRakJDg=
 
 lodash@^4.17.13, lodash@^4.17.15:
-  version "4.17.15"
-  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.15.tgz#b447f6670a0455bbfeedd11392eff330ea097548"
-  integrity sha512-8xOcRHvCjnocdS5cpwXQXVzmmh5e5+saE2QGoeQmbKmRS6J3VQppPOIt0MnmE+4xlZoumy0GPG0D0MVIQbNA1A==
+  version "4.17.19"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.19.tgz#e48ddedbe30b3321783c5b4301fbd353bc1e4a4b"
+  integrity sha512-JNvd8XER9GQX0v2qJgsaN/mzFCNA5BRe/j8JN9d+tWyGLSodKQHKFicdwNYzWwI3wjRnaKPsGj1XkBjx/F96DQ==
 
 magic-string@^0.22.5:
   version "0.22.5"
@@ -3674,7 +3669,7 @@ ts-jest@^26.0.0:
     semver "7.x"
     yargs-parser "18.x"
 
-ts-node@^8.10.1:
+ts-node@^8.10.2:
   version "8.10.2"
   resolved "https://registry.yarnpkg.com/ts-node/-/ts-node-8.10.2.tgz#eee03764633b1234ddd37f8db9ec10b75ec7fb8d"
   integrity sha512-ISJJGgkIpDdBhWVu3jufsWpK3Rzo7bdiIXJjQc0ynKxVOVcg2oIrf2H2cejminGrptVc6q6/uynAHNCuWGbpVA==
