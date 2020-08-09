@@ -123,7 +123,7 @@ function multiRegister(way: IWay) {
       })
     }
   })
-
+  getter.forEach = receiver =>  activities.forEach(receiver)
   getter.onNewRegistration = f => register.up(v => f(v.activity))
   getter.solid = target => {
     const instance = getter(target)

@@ -103,6 +103,7 @@ interface MultiThing<X> extends PublicThing<X> {
   broadcast: Thing<X>
   solid(id: any): Promise<Thing<X>>
   onNewRegistration(listener: (thing: Thing<X>) => void)
+  forEach(reciever:(thing:Thing<X>)=>void):void
 }
 
 type BodySens<X> = LosAtomized<RmFunc<X>> &
