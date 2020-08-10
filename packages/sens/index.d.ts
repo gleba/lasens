@@ -85,7 +85,7 @@ type LosPrivateFrom<T> = T extends { _private: any }
 //   // actions: DomainActions<D>
 // }
 
-type Thing<X> = OnlyFunc<X> & LosAtomized<RmFunc<X>> & PublicThing<X>
+type Thing<X> = LosClarify<OnlyFunc<X> & LosAtomized<RmFunc<X>> & PublicThing<X>>
 
 interface PublicThing<X> {
   $: {
