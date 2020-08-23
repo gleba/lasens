@@ -12,13 +12,13 @@ const primitiveExceptions = {
   [Symbol.toStringTag]: true,
   [Symbol.toPrimitive]: true,
 }
-
+const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')();
 export function makeRune(length: number): string {
   let charset =
       'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
     i,
     result = ''
-  if ((process as any).browser) {
+  if (isBrowser) {
     if (window.crypto && window.crypto.getRandomValues) {
       let values = new Uint32Array(length)
       window.crypto.getRandomValues(values)

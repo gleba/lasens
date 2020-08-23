@@ -1,7 +1,8 @@
 /**
  * @internal-all
  */
-import ns, { IBox, IWay, makeRune } from './index'
+import ns, { IBox, IWay} from './index'
+import {makeRune} from './utils'
 import { A } from 'alak'
 import { decorate } from './decor'
 import { alive } from 'alak/atom/utils'
