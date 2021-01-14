@@ -1,4 +1,3 @@
-/// <reference path="../global.d.ts"/>
 
 type ClassInstance = new (...args: any) => any
 type ClassToKV<T> = T extends ClassInstance ? InstanceType<T> : never
@@ -99,18 +98,23 @@ interface PublicThing<X> {
 
 interface MultiThing<X> extends PublicThing<X> {
   (id: any): Thing<X>
+
   remove(id: any): void
+
   broadcast: Thing<X>
-  solid(id: any): Promise<Thing<X>>
+
+  async(id: any): Promise<Thing<X>>
+
   onNewRegistration(listener: (thing: Thing<X>) => void)
-  forEach(reciever:(thing:Thing<X>)=>void):void
+
+  forEach(reciever: (thing: Thing<X>) => void): void
 }
 
 type BodySens<X> = LosAtomized<RmFunc<X>> &
   OnlyFunc<X> &
   PublicThing<X> & {
-    _?: LosHolyFrom<X>
-  }
+  _?: LosHolyFrom<X>
+}
 
 interface LifeCycleOption {
   immediatelyStart?: boolean
@@ -118,9 +122,6 @@ interface LifeCycleOption {
   decayDelay?: number
 }
 
-interface ExtendedPrivateAtoms<X, P> extends ExtendedActions<X, P> {
-  privateAtoms<P>(a: P): ExtendedActions<X, StyledThing<P>>
-}
 
 interface EdgeConstructor<X, P> extends LifeCycle<X> {
   constructor<AO>(
@@ -128,24 +129,22 @@ interface EdgeConstructor<X, P> extends LifeCycle<X> {
   ): LifeCycle<X & UnpackedPromise<AO>>
 }
 
-interface ExtendedActions<X, P> extends EdgeConstructor<X, P> {
-  publicActions<AO>(
-    actions: AO
-  ): EdgeConstructor<X & OnlyFunc<StyledThing<AO>>, P>
-}
 
 interface LifeCycle<X> extends ExtendDomain<X> {
   lifeCycle(options: LifeCycleOption): ExtendDomain<X>
 }
+
 interface TCFinalizeUp<X> {
   register(): Thing<X>
   multiRegister(): MultiThing<X>
 }
+
 interface ExtendDomain<X> extends TCFinalizeUp<X> {
   domain(namespace: string): TCFinalizeUp<X>
 }
 
-interface ThingConstructor<X> extends ExtendedPrivateAtoms<X, X> {}
+interface ThingConstructor<X> extends EdgeConstructor<X, X> {
+}
 
 type StyledThing<T> = T extends ClassInstance ? ClassToKV<T> : T
 

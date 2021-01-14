@@ -21,7 +21,7 @@ class Store extends Sens<Store> {
   //   mem: 5,
   // }
   _ = {
-    holy: 'stick',
+    holy: 'stick'
   }
 
   //
@@ -39,27 +39,31 @@ class Store extends Sens<Store> {
   //   return "-"
   // }
 }
+
 // const classStore = MakeThing(X).domain('x').register()
 
-class Private extends Sens<Private>{
+class Private extends Sens<Private> {
   secret = true
   age: number
 }
 
 const cms = MakeThing(Store)
-  .privateAtoms(Private)
-  .publicActions(
-    class extends Private {
-      publicLevel() {
-        this.age = 5
-        console.log('public action age', this.age)
-        console.log('public age.uid:::', this.$.age.uid)
-        console.log('public action secret', this.secret)
-        // console.log('public action count', this.count)
-      }
-    }
-  )
-  .constructor(async body => {
+  // .privateAtoms(Private)
+  // .publicActions(
+  //   class extends Private {
+  //     publicLevel() {
+  //       this.age = 5
+  //       console.log('public action age', this.age)
+  //       console.log('public age.uid:::', this.$.age.uid)
+  //       console.log('public age.uid:::', this.$.age.id)
+  //       console.log('public action secret', this.secret)
+  //       // console.log('public action count', this.count)
+  //     }
+  //   }
+  // )
+  .constructor(body => {
+    // console.log(body.count.id)
+
     // body
     // console.log('body holy:::', body._)
     // console.log('body count:::', body.age.value)
@@ -67,33 +71,55 @@ const cms = MakeThing(Store)
     // console.log('body  .age.uid:::', body.age.uid)
     // console.log('body:', body.age.id, body.age.uid)
 
-    body.publicLevel()
+    // body.publicLevel()
     // body.age.up(v => {
     //   console.log('body up age', v)
     // })
 
-    console.log('we are waiting')
-    await new Promise(done => {
-      setTimeout(done, 500)
-    })
-    console.log('ext')
+    // console.log('awaiting')
+    // new Promise(done => {
+    //   setTimeout(done, 500)
+    // })
+    // console.log('ready')
     return {
-      nextLevel(a: string) {
+      nextLevel(text: string) {
+        console.log("!")
+
         // body.publicLevel()
-        console.log({ a })
-        console.log('next level', body.secret.value)
-      },
+        console.log('::next level 1::', body['x1'].uid)
+        console.log('::next level 2::', body['x2'].uid)
+        // console.log('next level', body.secret.value)
+      }
     }
   })
-  .lifeCycle({
-    immediatelyStart: true,
-  })
-  .domain('cms')
+  // .lifeCycle({
+  //   immediatelyStart: true
+  // })
+  // .domain('cms')
   .multiRegister()
 
+
 async function test() {
+  // console.log(':::', cms(1))
+  // let inst = cms(1)
+  // console.log({ inst })
+  // console.log(cms(1).count)
+  console.log("::: :::2", cms(1)['x2'].uid)
+  cms(1).nextLevel("a")
+  console.log("::: :::1", cms(1)['x1'].uid)
+  //
+  // console.log('::: :::', inst.nextLevel("z"))
+
+  // console.log('+')
+  // console.log('::: :::', inst['x1'].uid)
+  // console.log(':', inst.nextLevel('x'))
+  // console.log()
+  //
+  // console.log(cms(1))
+  console.log('________________________________________________________')
+
   // console.log(':1')
-  cms(1)
+  // cms.publicLevel()
   // cms.solid(2)
   // // console.log({ p })
   // let x = await p
@@ -101,9 +127,12 @@ async function test() {
   // x.nextLevel('yes')
   // console.log('test 3')
   // cms.broadcast.publicLevel()
-  cms.broadcast.publicLevel()
+  // cms.broadcast.publicLevel()
 }
+
 test()
+
+// console.log('2 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::: 1')
 
 // declare module '../packages/sens/src' {
 //   export interface NS {

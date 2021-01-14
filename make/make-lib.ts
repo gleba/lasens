@@ -30,7 +30,7 @@ export const makeLib = async (packageName?) => {
     console.warn(e)
   })
 
-  let globalTDS = readFileSync(path.resolve('packages/global.d.ts')).toString()
+  // let globalTDS = readFileSync(path.resolve('packages/global.d.ts')).toString()
   const defPacks = {}
   const readDef = (p, name) => {
     let fp = path.join(p, name)
@@ -72,7 +72,7 @@ export const makeLib = async (packageName?) => {
     ).toString()
     writeFileSync(
       path.join(distPath, 'packages', name, 'global.d.ts'),
-      globalTDS + locDTS
+      locDTS
     )
     console.log('++ global.d.ts')
     let outIndexPath = path.join(distPath, 'packages', name, 'index.d.ts')

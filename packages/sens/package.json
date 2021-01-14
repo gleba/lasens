@@ -1,6 +1,6 @@
 {
     "name": "lasens",
-    "version": "0.2.0-next.63",
+    "version": "0.2.0-next.70",
     "main": "index.js",
     "typings": "index.d.ts",
     "engines": {

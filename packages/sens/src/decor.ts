@@ -1,7 +1,5 @@
 import { clearObject } from './utils'
-import { alive } from 'alak/atom/utils'
 import { Storage } from './storage'
-import { addAtom } from './awake'
 
 enum Decor {
   // Alive = 'alive',
