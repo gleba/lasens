@@ -65,8 +65,9 @@ type LosAtomized<T> = { readonly [K in keyof T]: IAtom<T[K]> }
 type RmType<T, Condition> = Omit<T, LosAllowedNames<T, Condition>>
 type PickType<T, Condition> = Pick<T, LosAllowedNames<T, Condition>>
 type RmFunc<T> = RmType<LosClarify<T>, Func>
-type OnlyFunc<T> = PickType<LosClarify<T>, Func>
+type OnlyFunc<T> = PickType<LosClarify<T>, Func | Funs>
 type Func = (args: any) => any
+type Funs = (...args: any[]) => any
 
 // type LosAtomsFrom<T> = T extends { atoms: any } ? T['atoms'] : any
 // type LosActionsFrom<T> = T extends { actions: any } ? T['actions'] : any
