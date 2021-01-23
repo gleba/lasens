@@ -124,9 +124,9 @@ interface LifeCycleOption {
 }
 
 
-interface EdgeConstructor<X, P> extends LifeCycle<X> {
-  constructor<AO>(
-    fn: (body: BodySens<X & P>) => AO
+interface EdgeController<X, P> extends LifeCycle<X> {
+  controller<AO>(
+    fn: (model: BodySens<X & P>) => AO
   ): LifeCycle<X & UnpackedPromise<AO>>
 }
 
@@ -144,9 +144,9 @@ interface ExtendDomain<X> extends TCFinalizeUp<X> {
   domain(namespace: string): TCFinalizeUp<X>
 }
 
-interface ThingConstructor<X> extends EdgeConstructor<X, X> {
+interface ThingController<X> extends EdgeController<X, X> {
 }
 
 type StyledThing<T> = T extends ClassInstance ? ClassToKV<T> : T
 
-type MiddleThink<X> = ThingConstructor<StyledThing<X>>
+type MiddleThink<X> = ThingController<StyledThing<X>>

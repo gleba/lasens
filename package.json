@@ -1,6 +1,5 @@
 {
-  "name": "lasens-",
-  "version": "0.2.0-next.0",
+
   "scripts": {
     "dev": "jest --watch --verbose true ",
     "build": "node make/build.js",

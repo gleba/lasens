@@ -45,8 +45,8 @@ export function deepAwake(way: IWay, id?, target?) {
   const think = { _: holistic, $: $ctxPublic, __ }
   // const deep = bodyActions
 
-  if (way.constructor) {
-    let lasActions = way.constructor(
+  if (way.controller) {
+    let lasActions = way.controller(
       new Proxy(
         [ think, bodyActions,  proxyAtoms ],
         triada

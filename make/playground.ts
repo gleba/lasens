@@ -61,7 +61,7 @@ const cms = MakeThing(Store)
   //     }
   //   }
   // )
-  .constructor(body => {
+  .controller(body => {
     // console.log(body.count.id)
 
     // body

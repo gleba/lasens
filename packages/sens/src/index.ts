@@ -29,12 +29,12 @@ export interface IWay {
   multi?: boolean
   privateThings?: any
   publicAction?: any
-  constructor?: any
+  controller?: any
 }
 
-export function MakeThing<T>(thing: T): MiddleThink<T> {
+export function MakeThing<T>(model: T): MiddleThink<T> {
   const way: IWay = {
-    thing,
+    thing: model,
     domain: 'domain'
   }
   const finalSteeps = {
@@ -59,13 +59,13 @@ export function MakeThing<T>(thing: T): MiddleThink<T> {
     ...finalSteeps
   } as MiddleThink<T>
 
-  function constructor(f) {
-    way.constructor = f
+  function controller(f) {
+    way.controller = f
     return middleSteps
   }
 
   return {
-    constructor,
+    controller,
     ...middleSteps
   }
 }
@@ -86,7 +86,7 @@ function multiRegister(way: IWay) {
     if (target) {
       switch (typeof target) {
         case 'number':
-          key = target;
+          key = target
           break
         case 'string':
         case 'symbol':
